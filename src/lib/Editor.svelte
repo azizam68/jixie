@@ -2,15 +2,16 @@
     import { onMount } from 'svelte';
     import { Editor as TiptapEditor } from '@tiptap/core';
     import StarterKit from '@tiptap/starter-kit';
+    import * as Y from 'yjs';
+import Collaboration from '@tiptap/extension-collaboration';
 
-    let {
-        content = '',
-        onchange
-    }: {
-        content?: string;
-        onchange?: (value: string) => void;
-    } = $props();
+let {
+    ydoc
+}: {
+    ydoc: Y.Doc;
+} = $props();
 
+    
     let editorElement: HTMLDivElement;
     let editor: TiptapEditor;
 
@@ -20,25 +21,32 @@
         boldActive = editor.isActive('bold');
     }
     onMount(() => {
-        editor = new TiptapEditor({
-            element: editorElement,
-            extensions: [StarterKit],
-            content,
+    editor = new TiptapEditor({
+        element: editorElement,
 
-            onUpdate: ({ editor }) => {
-                onchange?.(editor.getHTML());
-                boldActive = editor.isActive('bold');
-            },
+        extensions: [
+            StarterKit.configure({
+                undoRedo: false
+            }),
 
-            onSelectionUpdate: ({ editor }) => {
-                boldActive = editor.isActive('bold');
-            }
-        });
+            Collaboration.configure({
+                document: ydoc
+            })
+        ],
 
-        return () => {
-            editor.destroy();
-        };
+        onUpdate: ({ editor }) => {
+            boldActive = editor.isActive('bold');
+        },
+
+        onSelectionUpdate: ({ editor }) => {
+            boldActive = editor.isActive('bold');
+        }
     });
+
+    return () => {
+        editor.destroy();
+    };
+});
 
     function toggleBold() {
         editor.chain().focus().toggleBold().run();

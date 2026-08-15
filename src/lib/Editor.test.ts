@@ -1,11 +1,25 @@
 import { render, screen } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import Editor from "./Editor.svelte";
+import * as Y from "yjs";
+import { Editor as TiptapEditor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import Collaboration from "@tiptap/extension-collaboration";
+
+function renderEditor(ydoc = new Y.Doc()) {
+  render(Editor, {
+    props: {
+      ydoc,
+    },
+  });
+
+  return { ydoc };
+}
 
 describe("Éditeur", () => {
   it("affiche une zone d’édition", () => {
-    render(Editor);
+    renderEditor();
 
     expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
@@ -13,7 +27,7 @@ describe("Éditeur", () => {
   it("permet d’écrire du texte", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
 
@@ -22,46 +36,34 @@ describe("Éditeur", () => {
     expect(textbox).toHaveTextContent("Bonjour Jixie");
   });
 
-  it("affiche le contenu initial", () => {
-    render(Editor, {
-      props: {
-        content: "Bienvenue dans Jixie",
-      },
-    });
+it("crée un document Yjs vide", () => {
+  const ydoc = new Y.Doc();
 
-    expect(screen.getByRole("textbox")).toHaveTextContent(
-      "Bienvenue dans Jixie",
-    );
-  });
-  it("signale quand le contenu est modifié", async () => {
-    const user = userEvent.setup();
-    let contenu = "";
+  renderEditor(ydoc);
 
-    render(Editor, {
-      props: {
-        content: "",
-        onchange: (value: string) => {
-          contenu = value;
-        },
-      },
-    });
+  const fragment = ydoc.getXmlFragment("default");
 
-    const textbox = screen.getByRole("textbox");
+  expect(fragment.length).toBe(0);
+});
+it("synchronise les modifications avec un document Yjs", async () => {
+  const user = userEvent.setup();
+  const ydoc = new Y.Doc();
 
-    // Au lieu de user.clear(), sélectionner tout et supprimer
-    await user.tripleClick(textbox); // Sélectionner tout
-    await user.keyboard("{Backspace}"); // Supprimer le contenu
+  renderEditor(ydoc);
 
-    // OU simplement taper sans clear (si l'éditeur est vide par défaut)
-    await user.type(textbox, "Bonjour Jixie");
+  const textbox = screen.getByRole("textbox");
 
-    expect(contenu).toContain("Bonjour Jixie");
-  });
+  await user.type(textbox, "Bonjour Jixie");
+
+  const fragment = ydoc.getXmlFragment("default");
+
+  expect(fragment.toString()).toContain("Bonjour Jixie");
+});
 
   it("permet d’écrire plusieurs paragraphes", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
 
@@ -73,10 +75,13 @@ describe("Éditeur", () => {
     expect(textbox).toHaveTextContent("Deuxième paragraphe");
   });
 
+  // tests gras...
+
+
   it("permet de mettre du texte en gras #1 - le texte ne doit pas etre gras", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
 
@@ -88,7 +93,7 @@ describe("Éditeur", () => {
   it("permet de mettre du texte en gras #2 - le bouton existe", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
     await user.type(textbox, "Bonjour Jixie");
@@ -101,7 +106,7 @@ describe("Éditeur", () => {
   it("permet de mettre du texte en gras", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
     const boldButton = screen.getByRole("button", { name: "Gras" });
@@ -119,7 +124,7 @@ describe("Éditeur", () => {
   it("permet de supprimer le gras", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
     const boldButton = screen.getByRole("button", { name: "Gras" });
@@ -145,7 +150,7 @@ describe("Éditeur", () => {
   it("indique quand le curseur est dans un texte en gras", async () => {
     const user = userEvent.setup();
 
-    render(Editor);
+    renderEditor();
 
     const textbox = screen.getByRole("textbox");
     const boldButton = screen.getByRole("button", { name: "Gras" });
@@ -158,4 +163,32 @@ describe("Éditeur", () => {
 
     expect(boldButton).toHaveAttribute("aria-pressed", "true");
   });
+  
+  
+  it("affiche le contenu existant dans un document Yjs", async () => {
+  const ydoc = new Y.Doc();
+
+  const sourceEditor = new TiptapEditor({
+    extensions: [
+      StarterKit.configure({
+        undoRedo: false,
+      }),
+      Collaboration.configure({
+        document: ydoc,
+      }),
+    ],
+  });
+
+  // Écrire réellement dans le document Yjs
+  sourceEditor.commands.setContent("<p>Hello World</p>");
+
+  // Notre composant lit le même Y.Doc
+  renderEditor(ydoc);
+
+  const textbox = screen.getByRole("textbox");
+
+  expect(textbox).toHaveTextContent("Hello World");
+
+  sourceEditor.destroy();
+});
 });
