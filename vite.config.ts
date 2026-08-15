@@ -20,7 +20,7 @@ export default defineConfig({
 		svelteTesting()
 	],
 	test: {
-		environment: 'jsdom',
+		environment: 'happy-dom',
 		setupFiles: ['./vitest-setup.ts']
 	}
 });
