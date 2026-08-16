@@ -1,20 +1,40 @@
 import * as Y from "yjs";
+import { supabase } from "../supabase";
+import { Base64 } from "js-base64";
 
 export class DocumentRepository {
-  private documents = new Map<string, Uint8Array>();
+async save(id: string, ydoc: Y.Doc): Promise<void> {
+    const update = Y.encodeStateAsUpdate(ydoc);
+    const content = Base64.fromUint8Array(update);
 
-  async save(id: string, ydoc: Y.Doc): Promise<void> {
-    this.documents.set(id, Y.encodeStateAsUpdate(ydoc));
-  }
+    const { error } = await supabase
+        .from("documents")
+        .upsert({
+            id,
+            content
+        });
 
-  async load(id: string): Promise<Y.Doc> {
-    const ydoc = new Y.Doc();
-    const update = this.documents.get(id);
+    if (error) {
+        throw error;
+    }
+}
+async load(id: string): Promise<Y.Doc> {
+    const { data, error } = await supabase
+        .from("documents")
+        .select("content")
+        .eq("id", id)
+        .single();
 
-    if (update) {
-      Y.applyUpdate(ydoc, update);
+    if (error) {
+        throw error;
     }
 
+    const ydoc = new Y.Doc();
+
+    const update = Base64.toUint8Array(data.content);
+
+    Y.applyUpdate(ydoc, update);
+
     return ydoc;
-  }
+}
 }
