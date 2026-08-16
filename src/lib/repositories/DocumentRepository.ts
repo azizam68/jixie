@@ -1,40 +1,82 @@
 import * as Y from "yjs";
 import { supabase } from "../supabase";
 import { Base64 } from "js-base64";
+import type { IDocumentRepository } from "./IDocumentRepository";
 
-export class DocumentRepository {
-async save(id: string, ydoc: Y.Doc): Promise<void> {
-    const update = Y.encodeStateAsUpdate(ydoc);
-    const content = Base64.fromUint8Array(update);
+export class DocumentRepository  implements IDocumentRepository {
+    private decodeDocument(content: string): Y.Doc {
+        const ydoc = new Y.Doc();
 
-    const { error } = await supabase
-        .from("documents")
-        .upsert({
-            id,
-            content
-        });
+        const update = Base64.toUint8Array(content);
 
-    if (error) {
-        throw error;
+        Y.applyUpdate(ydoc, update);
+
+        return ydoc;
     }
-}
-async load(id: string): Promise<Y.Doc> {
-    const { data, error } = await supabase
-        .from("documents")
-        .select("content")
-        .eq("id", id)
-        .single();
+    async save(id: string, ydoc: Y.Doc): Promise<void> {
+        const update = Y.encodeStateAsUpdate(ydoc);
+        const content = Base64.fromUint8Array(update);
 
-    if (error) {
-        throw error;
+        // Sauvegarde de l'état courant
+        const { error: documentError } = await supabase
+            .from("documents")
+            .upsert({
+                id,
+                content
+            });
+
+        if (documentError) {
+            throw documentError;
+        }
+
+        // Ajout à l'historique
+        const { error: versionError } = await supabase
+            .from("document_versions")
+            .insert({
+                document_id: id,
+                content
+            });
+
+        if (versionError) {
+            throw versionError;
+        }
+    }
+    async load(id: string): Promise<Y.Doc> {
+        const { data, error } = await supabase
+            .from("document_versions")
+            .select("content")
+            .eq("document_id", id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return this.decodeDocument(data.content)
+
     }
 
-    const ydoc = new Y.Doc();
+    async loadVersion(versionId: number): Promise<Y.Doc> {
+        const { data, error } = await supabase
+            .from("document_versions")
+            .select("content")
+            .eq("id", versionId)
+            .single();
 
-    const update = Base64.toUint8Array(data.content);
+        if (error) {
+            throw error;
+        }
 
-    Y.applyUpdate(ydoc, update);
+        return this.decodeDocument(data.content)
+    }
+    async restoreVersion(
+        documentId: string,
+        versionId: number
+    ): Promise<void> {
+        const ydoc = await this.loadVersion(versionId);
 
-    return ydoc;
-}
+        await this.save(documentId, ydoc);
+    }
 }

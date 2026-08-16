@@ -6,26 +6,26 @@
     import { DocumentRepository } from "$lib/repositories/DocumentRepository";
     import { DocumentService } from "$lib/services/DocumentService";
 
+    let { data } = $props();
+
     const repository = new DocumentRepository();
     const documentService = new DocumentService(repository);
-
-    const documentId = crypto.randomUUID();
 
     let ydoc: Y.Doc | undefined = $state();
 
     onMount(async () => {
-        ydoc = await documentService.load(documentId);
+        ydoc = await documentService.load(data.documentId);
     });
 </script>
 
 <h1>Welcome to Jixie</h1>
-<p>dev in progress ...</p>
+<p>Document : {data.documentId}</p>
 
 {#if ydoc}
     <Editor
         {ydoc}
-        {documentId}
-        onSave={(ydoc) => documentService.save(documentId, ydoc)}
+        documentId={data.documentId}
+        onSave={(ydoc) => documentService.save(data.documentId, ydoc)}
     />
 {:else}
     <p>Chargement du document…</p>

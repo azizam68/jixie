@@ -1,20 +1,25 @@
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, waitFor } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect } from "vitest";
+import { describe, vi, it, expect } from "vitest";
 import Editor from "./Editor.svelte";
 import * as Y from "yjs";
 import { Editor as TiptapEditor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 
-function renderEditor(ydoc = new Y.Doc()) {
-  render(Editor, {
-    props: {
-      ydoc,
-    },
-  });
+function renderEditor(
+    ydoc = new Y.Doc(),
+    onSave?: (ydoc: Y.Doc) => Promise<void>
+) {
+    const documentId = crypto.randomUUID();
 
-  return { ydoc };
+    return render(Editor, {
+        props: {
+            ydoc,
+            documentId,
+            onSave
+        }
+    });
 }
 
 describe("Éditeur", () => {
@@ -36,29 +41,29 @@ describe("Éditeur", () => {
     expect(textbox).toHaveTextContent("Bonjour Jixie");
   });
 
-it("crée un document Yjs vide", () => {
-  const ydoc = new Y.Doc();
+  it("crée un document Yjs vide", () => {
+    const ydoc = new Y.Doc();
 
-  renderEditor(ydoc);
+    renderEditor(ydoc);
 
-  const fragment = ydoc.getXmlFragment("default");
+    const fragment = ydoc.getXmlFragment("default");
 
-  expect(fragment.length).toBe(0);
-});
-it("synchronise les modifications avec un document Yjs", async () => {
-  const user = userEvent.setup();
-  const ydoc = new Y.Doc();
+    expect(fragment.length).toBe(0);
+  });
+  it("synchronise les modifications avec un document Yjs", async () => {
+    const user = userEvent.setup();
+    const ydoc = new Y.Doc();
 
-  renderEditor(ydoc);
+    renderEditor(ydoc);
 
-  const textbox = screen.getByRole("textbox");
+    const textbox = screen.getByRole("textbox");
 
-  await user.type(textbox, "Bonjour Jixie");
+    await user.type(textbox, "Bonjour Jixie");
 
-  const fragment = ydoc.getXmlFragment("default");
+    const fragment = ydoc.getXmlFragment("default");
 
-  expect(fragment.toString()).toContain("Bonjour Jixie");
-});
+    expect(fragment.toString()).toContain("Bonjour Jixie");
+  });
 
   it("permet d’écrire plusieurs paragraphes", async () => {
     const user = userEvent.setup();
@@ -163,32 +168,256 @@ it("synchronise les modifications avec un document Yjs", async () => {
 
     expect(boldButton).toHaveAttribute("aria-pressed", "true");
   });
-  
-  
+
+
   it("affiche le contenu existant dans un document Yjs", async () => {
-  const ydoc = new Y.Doc();
+    const ydoc = new Y.Doc();
 
-  const sourceEditor = new TiptapEditor({
-    extensions: [
-      StarterKit.configure({
-        undoRedo: false,
-      }),
-      Collaboration.configure({
-        document: ydoc,
-      }),
-    ],
+    const sourceEditor = new TiptapEditor({
+      extensions: [
+        StarterKit.configure({
+          undoRedo: false,
+        }),
+        Collaboration.configure({
+          document: ydoc,
+        }),
+      ],
+    });
+
+    // Écrire réellement dans le document Yjs
+    sourceEditor.commands.setContent("<p>Hello World</p>");
+
+    // Notre composant lit le même Y.Doc
+    renderEditor(ydoc);
+
+    const textbox = screen.getByRole("textbox");
+
+    expect(textbox).toHaveTextContent("Hello World");
+
+    sourceEditor.destroy();
   });
+  it('sauvegarde automatiquement le document lorsqu’il est modifié', async () => {
+    const user = userEvent.setup();
 
-  // Écrire réellement dans le document Yjs
-  sourceEditor.commands.setContent("<p>Hello World</p>");
+    const ydoc = new Y.Doc();
+    const saveDocument = vi.fn().mockResolvedValue(undefined);
+    const documentId = crypto.randomUUID();
 
-  // Notre composant lit le même Y.Doc
-  renderEditor(ydoc);
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+    const textbox = screen.getByRole('textbox');
 
-  const textbox = screen.getByRole("textbox");
+    await user.type(textbox, 'Bonjour Jixie');
 
-  expect(textbox).toHaveTextContent("Hello World");
+    await waitFor(() => {
+      expect(saveDocument).toHaveBeenCalled();
+    });
+  });
+  it('regroupe les modifications rapprochées en une seule sauvegarde', async () => {
+    const user = userEvent.setup();
 
-  sourceEditor.destroy();
-});
+    const ydoc = new Y.Doc();
+    const saveDocument = vi.fn().mockResolvedValue(undefined);
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+    const textbox = screen.getByRole('textbox');
+
+    await user.type(textbox, 'Bonjour Jixie');
+
+    // L'utilisateur vient juste de terminer sa saisie.
+    // Une sauvegarde ne doit pas être effectuée pour chaque caractère.
+    expect(saveDocument).not.toHaveBeenCalled();
+
+    // On laisse passer le délai de sauvegarde automatique.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(saveDocument).toHaveBeenCalledTimes(1);
+  });
+  it("indique quand le document est en cours de sauvegarde", async () => {
+    const user = userEvent.setup();
+
+    const ydoc = new Y.Doc();
+
+    const saveDocument = vi.fn(
+      () => new Promise<void>(() => { })
+    );
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour Jixie");
+
+    await waitFor(() => {
+      expect(screen.getByText("Enregistrement…")).toBeInTheDocument();
+    });
+  });
+  it("indique quand le document a été sauvegardé", async () => {
+    const user = userEvent.setup();
+
+    const ydoc = new Y.Doc();
+
+    const saveDocument = vi.fn().mockResolvedValue(undefined);
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour Jixie");
+
+    await waitFor(() => {
+      expect(saveDocument).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Enregistré")).toBeInTheDocument();
+    });
+  });
+  it("indique une erreur lorsque la sauvegarde échoue", async () => {
+    const user = userEvent.setup();
+
+    const ydoc = new Y.Doc();
+
+    const saveDocument = vi.fn().mockRejectedValue(
+      new Error("Erreur réseau")
+    );
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour Jixie");
+
+    await waitFor(() => {
+      expect(screen.getByText("Erreur d'enregistrement")).toBeInTheDocument();
+    });
+  });
+  it("retente automatiquement la sauvegarde après une erreur", async () => {
+    const user = userEvent.setup();
+
+    const ydoc = new Y.Doc();
+
+    const saveDocument = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Erreur réseau"))
+      .mockResolvedValue(undefined);
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+    const textbox = screen.getByRole("textbox");
+
+    // Première modification
+    await user.type(textbox, "Bonjour");
+
+    // Attendre la première tentative de sauvegarde
+    await waitFor(() => {
+      expect(saveDocument).toHaveBeenCalledTimes(1);
+    });
+
+    // La première sauvegarde a échoué
+    await waitFor(() => {
+      expect(screen.getByText("Erreur d'enregistrement")).toBeInTheDocument();
+    });
+
+    // L'utilisateur modifie à nouveau le document
+    await user.type(textbox, " Jixie");
+
+    // Une nouvelle sauvegarde doit être déclenchée
+    await waitFor(
+      () => {
+        expect(saveDocument).toHaveBeenCalledTimes(2);
+      },
+      { timeout: 1000 }
+    );
+
+    // Cette fois la sauvegarde réussit
+    await waitFor(() => {
+      expect(screen.getByText("Enregistré")).toBeInTheDocument();
+    });
+  });
+  it("crée une nouvelle version après une sauvegarde automatique", async () => {
+    const user = userEvent.setup();
+
+    const saveDocument = vi.fn().mockResolvedValue(undefined);
+
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc: new Y.Doc(),
+        documentId,
+        onSave: saveDocument
+      }
+    });
+
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour Jixie");
+
+    await waitFor(() => {
+      expect(saveDocument).toHaveBeenCalledTimes(1);
+    });
+  }); it("affiche le contenu du document chargé", async () => {
+    const ydoc = new Y.Doc();
+
+    const fragment = ydoc.getXmlFragment("prosemirror");
+
+    const paragraph = new Y.XmlElement("paragraph");
+    const text = new Y.XmlText("Bonjour Jixie");
+
+    paragraph.insert(0, [text]);
+    fragment.insert(0, [paragraph]);
+
+    const documentId = crypto.randomUUID();
+
+    render(Editor, {
+      props: {
+        ydoc,
+        documentId
+      }
+    });
+
+    const textbox = screen.getByRole("textbox");
+
+    expect(textbox).toHaveTextContent("Bonjour Jixie");
+  });
 });

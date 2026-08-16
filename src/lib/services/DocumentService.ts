@@ -1,10 +1,25 @@
-import type * as Y from 'yjs';
-import type { DocumentRepository } from '../repositories/DocumentRepository';
+import * as Y from "yjs";
+import type { IDocumentRepository } from "../repositories/IDocumentRepository";
 
 export class DocumentService {
-    constructor(private repository: DocumentRepository) {}
+    constructor(private repository: IDocumentRepository) {}
 
-    async save(id: string, ydoc: Y.Doc): Promise<void> {
-        await this.repository.save(id, ydoc);
+    async load(documentId: string): Promise<Y.Doc> {
+        return this.repository.load(documentId);
+    }
+
+    async save(documentId: string, ydoc: Y.Doc): Promise<void> {
+        await this.repository.save(documentId, ydoc);
+    }
+
+    async loadVersion(versionId: number): Promise<Y.Doc> {
+        return this.repository.loadVersion(versionId);
+    }
+
+    async restoreVersion(
+        documentId: string,
+        versionId: number
+    ): Promise<void> {
+        await this.repository.restoreVersion(documentId, versionId);
     }
 }
