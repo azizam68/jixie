@@ -1,32 +1,54 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import * as Y from "yjs";
+  import { browser } from "$app/environment";
+  import { SupabaseConfigService } from "$lib/services/SupabaseConfigService";
 
-    import Editor from "$lib/Editor.svelte";
-    import { DocumentRepository } from "$lib/repositories/DocumentRepository";
-    import { DocumentService } from "$lib/services/DocumentService";
+  const supabaseConfigService = new SupabaseConfigService();
+let url = $state("");
+    let key = $state("");
 
-    const repository = new DocumentRepository();
-    const documentService = new DocumentService(repository);
+    $effect(() => {
+        if (!browser) return;
 
-    const documentId = crypto.randomUUID();
+        const config = supabaseConfigService.load();
 
-    let ydoc: Y.Doc | undefined = $state();
-
-    onMount(async () => {
-        ydoc = await documentService.load(documentId);
+        url = config?.url ?? "";
+        key = config?.key ?? "";
     });
+  function saveConfig() {
+    supabaseConfigService.save({
+      url,
+      key,
+    });
+  }
+  function clearConfig() {
+    supabaseConfigService.clear();
+  }
 </script>
 
 <h1>Welcome to Jixie</h1>
-<p>dev in progress ...</p>
+<form
+  onsubmit={(event) => {
+    event.preventDefault();
+    saveConfig();
+  }}
+>
+  <p>
+    <label for="supabase-url">URL Supabase</label>
+  </p>
 
-{#if ydoc}
-    <Editor
-        {ydoc}
-        {documentId}
-        onSave={(ydoc) => documentService.save(documentId, ydoc)}
-    />
-{:else}
-    <p>Chargement du document…</p>
-{/if}
+  <input type="text" id="supabase-url" name="supabase-url" bind:value={url} />
+
+  <p>
+    <label for="supabase-key">Clé Supabase</label>
+  </p>
+
+  <input
+    type="password"
+    id="supabase-key"
+    name="supabase-key"
+    bind:value={key}
+  />
+
+  <button type="submit"> Enregistrer </button>
+  <button type="button" onclick={clearConfig}> Effacer </button>
+</form>

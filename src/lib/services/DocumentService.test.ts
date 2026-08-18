@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as Y from "yjs";
-
 import { DocumentService } from "./DocumentService";
 import type { IDocumentRepository } from "../repositories/IDocumentRepository";
 
@@ -15,7 +14,7 @@ describe("DocumentService", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
-it('sauvegarde un document via le repository', async () => {
+    it('sauvegarde un document via le repository', async () => {
 
         const service = new DocumentService(repositoryMock);
 
@@ -42,18 +41,19 @@ it('sauvegarde un document via le repository', async () => {
         expect(repositoryMock.load).toHaveBeenCalledWith(documentId);
         expect(result).toBe(ydoc);
     });
-    it("charge un document pour l'éditeur", async () => {
+    it("crée un nouveau document lorsqu'il n'existe pas", async () => {
     const documentId = crypto.randomUUID();
-    const ydoc = new Y.Doc();
 
-    vi.mocked(repositoryMock.load).mockResolvedValue(ydoc);
+    vi.mocked(repositoryMock.load).mockRejectedValue(
+        new Error("Document introuvable")
+    );
 
     const service = new DocumentService(repositoryMock);
 
-    const result = await service.load(documentId);
+    const ydoc = await service.loadOrCreate(documentId);
 
+    expect(ydoc).toBeInstanceOf(Y.Doc);
     expect(repositoryMock.load).toHaveBeenCalledWith(documentId);
-    expect(result).toBe(ydoc);
+    expect(repositoryMock.save).not.toHaveBeenCalled();
 });
 });
-    

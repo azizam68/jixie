@@ -1,12 +1,20 @@
 import { describe, it, expect } from "vitest";
 import * as Y from "yjs";
 import { DocumentRepository } from "./DocumentRepository";
-import { supabase } from "../supabase";
-
+import { createSupabaseClient } from "../supabase";
+import {
+    PUBLIC_SUPABASE_URL,
+    PUBLIC_SUPABASE_ANON_KEY
+} from "$env/static/public";
 
 describe("DocumentRepository", () => {
+    
+const supabase = createSupabaseClient(
+    PUBLIC_SUPABASE_URL,
+    PUBLIC_SUPABASE_ANON_KEY
+);
 it("sauvegarde et recharge le contenu d'un document Yjs", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
 
     const ydoc = new Y.Doc();
 
@@ -25,7 +33,7 @@ it("sauvegarde et recharge le contenu d'un document Yjs", async () => {
     ).toContain("Hello World");
 });
   it("sauvegarde réellement le document dans Supabase", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
 
     const ydoc = new Y.Doc();
 const documentId = crypto.randomUUID();
@@ -41,7 +49,7 @@ await repository.save(documentId, ydoc);
     expect(data?.id).toBe(documentId);
 });
 it("crée une version du document lors de la sauvegarde", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
     const documentId = crypto.randomUUID();
 
     const ydoc = new Y.Doc();
@@ -59,7 +67,7 @@ it("crée une version du document lors de la sauvegarde", async () => {
     expect(data?.[0].content).toBeTruthy();
 });
 it("conserve plusieurs versions d'un document", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
     const documentId = crypto.randomUUID();
 
     const ydoc = new Y.Doc();
@@ -95,7 +103,7 @@ it("conserve plusieurs versions d'un document", async () => {
     expect(data?.[0].content).not.toBe(data?.[1].content);
 });
 it("recharge une ancienne version du document", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
     const documentId = crypto.randomUUID();
 
     const ydoc = new Y.Doc();
@@ -122,7 +130,7 @@ it("recharge une ancienne version du document", async () => {
     ).toContain("Bonjour");
 });
 it("charge la dernière version du document", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
 
     const documentId = crypto.randomUUID();
 
@@ -147,7 +155,7 @@ it("charge la dernière version du document", async () => {
     ).toContain("Version 2");
 });
 it("restaure une ancienne version comme nouvelle version", async () => {
-    const repository = new DocumentRepository();
+    const repository = new DocumentRepository(supabase);
 
     const documentId = crypto.randomUUID();
 

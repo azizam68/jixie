@@ -2,7 +2,33 @@
 import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 
-// Happy DOM gère déjà beaucoup de choses, mais on garde quelques mocks utiles
+console.log("Node localStorage:", globalThis.localStorage);
+console.log("Happy DOM localStorage:", window.localStorage);
+console.log(
+    "Même objet:",
+    globalThis.localStorage === window.localStorage
+);
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  key: vi.fn(),
+  length: 0,
+};
+
+// Stub global localStorage
+vi.stubGlobal('localStorage', localStorageMock);
+
+if (typeof window !== "undefined") {
+    Object.defineProperty(globalThis, "localStorage", {
+        value: window.localStorage,
+        writable: false,
+        configurable: true,
+    });
+}
 
 // Mock pour getClientRects (Happy DOM l'implémente peut-être déjà)
 if (!Element.prototype.getClientRects) {

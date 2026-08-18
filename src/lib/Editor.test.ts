@@ -396,28 +396,38 @@ describe("Éditeur", () => {
     await waitFor(() => {
       expect(saveDocument).toHaveBeenCalledTimes(1);
     });
-  }); it("affiche le contenu du document chargé", async () => {
+  }); 
+  it("affiche le contenu du document chargé", async () => {
     const ydoc = new Y.Doc();
 
-    const fragment = ydoc.getXmlFragment("prosemirror");
+    const sourceEditor = new TiptapEditor({
+        extensions: [
+            StarterKit.configure({
+                undoRedo: false,
+            }),
+            Collaboration.configure({
+                document: ydoc,
+            }),
+        ],
+    });
 
-    const paragraph = new Y.XmlElement("paragraph");
-    const text = new Y.XmlText("Bonjour Jixie");
+    sourceEditor.commands.setContent("<p>Bonjour Jixie</p>");
 
-    paragraph.insert(0, [text]);
-    fragment.insert(0, [paragraph]);
+    sourceEditor.destroy();
 
     const documentId = crypto.randomUUID();
 
     render(Editor, {
-      props: {
-        ydoc,
-        documentId
-      }
+        props: {
+            ydoc,
+            documentId,
+        },
     });
 
     const textbox = screen.getByRole("textbox");
 
-    expect(textbox).toHaveTextContent("Bonjour Jixie");
-  });
+    await waitFor(() => {
+        expect(textbox).toHaveTextContent("Bonjour Jixie");
+    });
+});
 });

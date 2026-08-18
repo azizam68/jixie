@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { supabase } from './supabase';
+import { describe, expect, it } from "vitest";
+import { createSupabaseClient } from "./supabase";
 
-describe('Supabase', () => {
-    it('se connecte à Supabase', async () => {
-        const { error } = await supabase
-            .from('documents')
-            .select('id')
-            .limit(1);
+describe("createSupabaseClient", () => {
+    it("crée un client Supabase avec la configuration fournie", () => {
+        const client = createSupabaseClient(
+            "https://example.supabase.co",
+            "ma-cle-supabase"
+        );
 
-        expect(error).toBeNull();
+        expect(client).toBeDefined();
     });
 });

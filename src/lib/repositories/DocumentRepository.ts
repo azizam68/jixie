@@ -1,9 +1,12 @@
 import * as Y from "yjs";
-import { supabase } from "../supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Base64 } from "js-base64";
 import type { IDocumentRepository } from "./IDocumentRepository";
 
 export class DocumentRepository  implements IDocumentRepository {
+
+    constructor(private supabase: SupabaseClient) {}
+    
     private decodeDocument(content: string): Y.Doc {
         const ydoc = new Y.Doc();
 
@@ -18,7 +21,7 @@ export class DocumentRepository  implements IDocumentRepository {
         const content = Base64.fromUint8Array(update);
 
         // Sauvegarde de l'état courant
-        const { error: documentError } = await supabase
+        const { error: documentError } = await this.supabase
             .from("documents")
             .upsert({
                 id,
@@ -30,7 +33,7 @@ export class DocumentRepository  implements IDocumentRepository {
         }
 
         // Ajout à l'historique
-        const { error: versionError } = await supabase
+        const { error: versionError } = await this.supabase
             .from("document_versions")
             .insert({
                 document_id: id,
@@ -42,7 +45,7 @@ export class DocumentRepository  implements IDocumentRepository {
         }
     }
     async load(id: string): Promise<Y.Doc> {
-        const { data, error } = await supabase
+        const { data, error } = await this.supabase
             .from("document_versions")
             .select("content")
             .eq("document_id", id)
@@ -59,7 +62,7 @@ export class DocumentRepository  implements IDocumentRepository {
     }
 
     async loadVersion(versionId: number): Promise<Y.Doc> {
-        const { data, error } = await supabase
+        const { data, error } = await this.supabase
             .from("document_versions")
             .select("content")
             .eq("id", versionId)

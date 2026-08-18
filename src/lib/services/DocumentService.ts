@@ -22,4 +22,16 @@ export class DocumentService {
     ): Promise<void> {
         await this.repository.restoreVersion(documentId, versionId);
     }
+
+    async loadOrCreate(documentId: string): Promise<Y.Doc> {
+        try {
+            return await this.repository.load(documentId);
+        } catch (error) {
+            if (error instanceof Error && error.message === "Document introuvable") {
+                const newDoc = new Y.Doc();
+                return newDoc;
+            }
+            throw error;
+        }
+    }
 }
