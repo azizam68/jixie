@@ -11,4 +11,6 @@ export interface IDocumentRepository {
         documentId: string,
         versionId: number
     ): Promise<void>;
+
+    create(): Promise<string>;
 }

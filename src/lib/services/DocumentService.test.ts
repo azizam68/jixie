@@ -9,6 +9,7 @@ describe("DocumentService", () => {
         load: vi.fn(),
         loadVersion: vi.fn(),
         restoreVersion: vi.fn(),
+        create: vi.fn(),
     };
 
     beforeEach(() => {
@@ -55,5 +56,17 @@ describe("DocumentService", () => {
     expect(ydoc).toBeInstanceOf(Y.Doc);
     expect(repositoryMock.load).toHaveBeenCalledWith(documentId);
     expect(repositoryMock.save).not.toHaveBeenCalled();
+});
+it("crée un nouveau document via le repository", async () => {
+    const documentId = crypto.randomUUID();
+
+    vi.mocked(repositoryMock.create).mockResolvedValue(documentId);
+
+    const service = new DocumentService(repositoryMock);
+
+    const result = await service.create();
+
+    expect(repositoryMock.create).toHaveBeenCalled();
+    expect(result).toBe(documentId);
 });
 });

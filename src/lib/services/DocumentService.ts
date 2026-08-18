@@ -34,4 +34,7 @@ export class DocumentService {
             throw error;
         }
     }
+    async create(): Promise<string> {
+    return this.repository.create();
+}
 }

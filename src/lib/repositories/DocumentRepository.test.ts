@@ -183,4 +183,29 @@ it("restaure une ancienne version comme nouvelle version", async () => {
         loaded.getXmlFragment("prosemirror").toString()
     ).toContain("Version 1");
 });
+it("crée un nouveau document", async () => {
+    const repository = new DocumentRepository(supabase);
+
+    const documentId = await repository.create();
+
+    expect(documentId).toBeTruthy();
+
+    const { data, error } = await supabase
+        .from("documents")
+        .select("id")
+        .eq("id", documentId)
+        .single();
+
+    expect(error).toBeNull();
+    expect(data?.id).toBe(documentId);
+});
+it("crée un document immédiatement chargeable", async () => {
+    const repository = new DocumentRepository(supabase);
+
+    const documentId = await repository.create();
+
+    const loaded = await repository.load(documentId);
+
+    expect(loaded).toBeInstanceOf(Y.Doc);
+});
 });

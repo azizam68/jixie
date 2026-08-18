@@ -23,6 +23,15 @@ describe("Homepage", () => {
         }),
     };
 
+    const createMock = vi.fn();
+vi.mock("$lib/services/DocumentService", () => {
+    return {
+        DocumentService: class {
+            create = createMock;
+        }
+    };
+});
+
     beforeEach(() => {
         storage.clear();
         vi.clearAllMocks();
@@ -118,5 +127,74 @@ it("charge la configuration Supabase existante", () => {
     expect(
         screen.getByLabelText("Clé Supabase")
     ).toHaveValue("ma-cle-supabase");
+});
+it("affiche un lien vers le dernier document", () => {
+    localStorage.setItem(
+        "jixie.lastDocumentId",
+        "document-123"
+    );
+
+    render(Page);
+
+    const link = screen.getByRole("link", {
+        name: "Continuer mon document",
+    });
+
+    expect(link).toHaveAttribute(
+        "href",
+        "/documents/document-123"
+    );
+});
+it("permet de créer un nouveau document", async () => {
+    localStorage.setItem(
+        "supabase.url",
+        "https://example.supabase.co"
+    );
+
+    localStorage.setItem(
+        "supabase.key",
+        "ma-cle-supabase"
+    );
+
+    const user = userEvent.setup();
+
+    render(Page);
+
+    expect(
+        screen.getByRole("button", {
+            name: "Nouveau document",
+        })
+    ).toBeInTheDocument();
+
+    await user.click(
+        screen.getByRole("button", {
+            name: "Nouveau document",
+        })
+    );
+});
+it("crée un nouveau document au clic", async () => {
+    const user = userEvent.setup();
+
+    createMock.mockResolvedValue("document-123");
+
+    localStorage.setItem(
+        "supabase.url",
+        "https://example.supabase.co"
+    );
+
+    localStorage.setItem(
+        "supabase.key",
+        "ma-cle-supabase"
+    );
+
+    render(Page);
+
+    const button = await screen.findByRole("button", {
+        name: "Nouveau document",
+    });
+
+    await user.click(button);
+
+    expect(createMock).toHaveBeenCalled();
 });
 });

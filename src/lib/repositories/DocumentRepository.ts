@@ -82,4 +82,13 @@ export class DocumentRepository  implements IDocumentRepository {
 
         await this.save(documentId, ydoc);
     }
+async create(): Promise<string> {
+    const documentId = crypto.randomUUID();
+
+    const ydoc = new Y.Doc();
+
+    await this.save(documentId, ydoc);
+
+    return documentId;
+}
 }
