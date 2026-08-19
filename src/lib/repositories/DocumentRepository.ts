@@ -1,7 +1,7 @@
 import * as Y from "yjs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Base64 } from "js-base64";
-import type { IDocumentRepository } from "./IDocumentRepository";
+import type { IDocumentRepository, IDocumentListItem } from "./IDocumentRepository";
 
 export class DocumentRepository  implements IDocumentRepository {
 
@@ -16,6 +16,22 @@ export class DocumentRepository  implements IDocumentRepository {
 
         return ydoc;
     }
+    async list(): Promise<IDocumentListItem[]> {
+	const { data, error } = await this.supabase
+		.from('documents')
+		.select('id')
+        .order('updated_at', { ascending: false })
+        .limit(10);
+
+	if (error) {
+		throw error;
+	}
+
+    return data.map((item, index) => ({
+        id: index+1,
+        title: item.id.toString(), // Assuming the title is the same as the id for now
+    }));
+}
     async save(id: string, ydoc: Y.Doc): Promise<void> {
         const update = Y.encodeStateAsUpdate(ydoc);
         const content = Base64.fromUint8Array(update);

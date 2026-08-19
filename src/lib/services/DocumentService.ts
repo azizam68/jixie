@@ -1,9 +1,12 @@
 import * as Y from "yjs";
-import type { IDocumentRepository } from "../repositories/IDocumentRepository";
+import type { IDocumentListItem, IDocumentRepository } from "../repositories/IDocumentRepository";
 
 export class DocumentService {
     constructor(private repository: IDocumentRepository) {}
 
+    async list(): Promise<IDocumentListItem[]> {
+		return this.repository.list();
+	}
     async load(documentId: string): Promise<Y.Doc> {
         return this.repository.load(documentId);
     }

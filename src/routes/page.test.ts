@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, waitFor } from "@testing-library/svelte";
 import Page from "./+page.svelte";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 
 describe("Homepage", () => {
 
@@ -23,14 +23,22 @@ describe("Homepage", () => {
         }),
     };
 
-    const createMock = vi.fn();
-vi.mock("$lib/services/DocumentService", () => {
-    return {
-        DocumentService: class {
-            create = createMock;
-        }
-    };
-});
+const { createMock, listMock, gotoMock } = vi.hoisted(() => ({
+    createMock: vi.fn(),
+    listMock: vi.fn(),
+    gotoMock: vi.fn()
+}));
+
+vi.mock("$lib/services/DocumentService", () => ({
+    DocumentService: class {
+        create = createMock;
+        list = listMock;
+    }
+}));
+
+vi.mock("$app/navigation", () => ({
+    goto: gotoMock
+}));
 
     beforeEach(() => {
         storage.clear();
@@ -73,12 +81,13 @@ vi.mock("$lib/services/DocumentService", () => {
                 name: "Enregistrer"
             })
         );
-
+    await waitFor(() => {
         expect(localStorage.getItem("supabase.url"))
             .toBe("https://example.supabase.co");
 
         expect(localStorage.getItem("supabase.key"))
             .toBe("ma-cle-supabase");
+    });
     });
 it("efface la configuration Supabase", async () => {
     const user = userEvent.setup();
@@ -129,7 +138,15 @@ it("charge la configuration Supabase existante", () => {
     ).toHaveValue("ma-cle-supabase");
 });
 it("affiche un lien vers le dernier document", () => {
+        localStorage.setItem(
+        "supabase.url",
+        "https://example.supabase.co"
+    );
+
     localStorage.setItem(
+        "supabase.key",
+        "ma-cle-supabase"
+    );localStorage.setItem(
         "jixie.lastDocumentId",
         "document-123"
     );
@@ -174,10 +191,7 @@ it("permet de créer un nouveau document", async () => {
 });
 it("crée un nouveau document au clic", async () => {
     const user = userEvent.setup();
-
-    createMock.mockResolvedValue("document-123");
-
-    localStorage.setItem(
+localStorage.setItem(
         "supabase.url",
         "https://example.supabase.co"
     );
@@ -186,11 +200,13 @@ it("crée un nouveau document au clic", async () => {
         "supabase.key",
         "ma-cle-supabase"
     );
+    listMock.mockResolvedValue([]);
+    createMock.mockResolvedValue("document-123");
 
     render(Page);
 
-    const button = await screen.findByRole("button", {
-        name: "Nouveau document",
+    const button = screen.getByRole("button", {
+        name: /nouveau document/i
     });
 
     await user.click(button);

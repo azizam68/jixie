@@ -10,11 +10,25 @@ describe("DocumentService", () => {
         loadVersion: vi.fn(),
         restoreVersion: vi.fn(),
         create: vi.fn(),
+        list: async () => [
+		{
+			id: 654654,
+			title: 'Mon premier document',
+		}
+    ]
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
+
+	it('retourne la liste des documents', async () => {
+		const service = new DocumentService(repositoryMock);
+
+		const documents = await service.list();
+
+		expect(documents).toBeInstanceOf(Array);
+	});
     it('sauvegarde un document via le repository', async () => {
 
         const service = new DocumentService(repositoryMock);

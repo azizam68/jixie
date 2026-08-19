@@ -1,5 +1,10 @@
 import type * as Y from "yjs";
 
+export interface IDocumentListItem {
+    id: Number;
+    title: string;
+}
+
 export interface IDocumentRepository {
     save(id: string, ydoc: Y.Doc): Promise<void>;
 
@@ -13,4 +18,6 @@ export interface IDocumentRepository {
     ): Promise<void>;
 
     create(): Promise<string>;
+
+    list():Promise<IDocumentListItem[]>;
 }
