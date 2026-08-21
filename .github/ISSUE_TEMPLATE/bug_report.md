@@ -1,0 +1,16 @@
+# .github/ISSUE_TEMPLATE/bug_report.yml
+name: 🐛 Signaler un problème
+description: Quelque chose ne fonctionne pas comme prévu
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Qu'est-ce qui s'est passé ?
+      description: Décris ce que tu as fait et ce qui ne s'est pas passé comme prévu
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: À quoi tu t'attendais ?
