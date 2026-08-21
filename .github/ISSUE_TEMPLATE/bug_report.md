@@ -1,4 +1,3 @@
-# .github/ISSUE_TEMPLATE/bug_report.yml
 name: 🐛 Signaler un problème
 description: Quelque chose ne fonctionne pas comme prévu
 labels: ["bug"]
