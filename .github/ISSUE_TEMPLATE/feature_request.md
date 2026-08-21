@@ -1,0 +1,12 @@
+# .github/ISSUE_TEMPLATE/feature_request.yml
+name: 💡 Suggestion
+description: Une idée pour améliorer le projet
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Ton idée
+      description: Décris ce que tu aimerais voir ajouté ou changé
+    validations:
+      required: true
