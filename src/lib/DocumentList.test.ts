@@ -15,14 +15,16 @@ describe('DocumentList', () => {
 				title: 'Mon deuxième document',
 			},
 		];
-
-		render(DocumentList, { documents });
+const onSelect = vi.fn();
+		render(DocumentList, { documents, onSelect });
 
 		expect(screen.getByText('Mon premier document')).toBeInTheDocument();
 		expect(screen.getByText('Mon deuxième document')).toBeInTheDocument();
 	});
     it('affiche un message lorsqu’il n’y a aucun document', () => {
-	render(DocumentList, { documents: [] });
+
+const onSelect = vi.fn();
+		render(DocumentList, { documents:[], onSelect });
 
 	expect(
 		screen.getByText('Aucun document')
