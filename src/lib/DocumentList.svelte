@@ -12,3 +12,15 @@
 	<div onclick={() => onSelect(document.title)}>{document.title}</div>
 {/each}
 {/if}
+
+<style>
+  div {
+	cursor: pointer;
+	padding: 5px;
+  }
+
+  div:hover {
+	background-color: #eee;
+	text-decoration: underline;
+  }
+</style>

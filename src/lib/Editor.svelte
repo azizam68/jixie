@@ -5,15 +5,15 @@
   import * as Y from "yjs";
   import Collaboration from "@tiptap/extension-collaboration";
 
-let {
+  let {
     ydoc,
     documentId,
-    onSave
-}: {
+    onSave,
+  }: {
     ydoc: Y.Doc;
     documentId: string;
     onSave?: (ydoc: Y.Doc) => Promise<void>;
-} = $props();
+  } = $props();
 
   let editorElement: HTMLDivElement;
   let editor: TiptapEditor;
@@ -35,13 +35,12 @@ let {
 
       saveStatus = "saving";
 
-     try {
-      await onSave(ydoc);
-      saveStatus = "saved";
-    } catch {
-      saveStatus = "error";
-    }
-
+      try {
+        await onSave(ydoc);
+        saveStatus = "saved";
+      } catch {
+        saveStatus = "error";
+      }
     }, 500);
   }
 
@@ -83,23 +82,52 @@ let {
   }
 </script>
 
-<div>
-  <button
-    type="button"
-    onclick={toggleBold}
-    aria-label="Gras"
-    aria-pressed={boldActive}
-  >
-    Gras
-  </button>
-  
-  {#if saveStatus === "saving"}
-  <span>Enregistrement…</span>
-{:else if saveStatus === "error"}
-  <span>Erreur d'enregistrement</span>
-{:else}
-  <span>Enregistré</span>
-{/if}
+<div id="editor-container">
+  <div id="editor-toolbar">
+    <button
+      type="button"
+      onclick={toggleBold}
+      aria-label="Gras"
+      aria-pressed={boldActive}
+      >Gras
+    </button>
 
-  <div bind:this={editorElement} aria-label="Éditeur de document"></div>
+    {#if saveStatus === "saving"}
+      <span>Enregistrement…</span>
+    {:else if saveStatus === "error"}
+      <span>Erreur d'enregistrement</span>
+    {:else}
+      <span>Enregistré</span>
+    {/if}
+  </div>
+
+  <div bind:this={editorElement} aria-label="Éditeur de document" style="border: none;"></div>
 </div>
+
+<style>
+  #editor-container {
+    min-height: 90dvh;
+    min-width: 90vw;
+    border: 1px solid black;
+    margin: 0px;
+    padding: 0px;
+    position:relative;
+
+    #editor-toolbar {
+      position: sticky;
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      top:0;
+      border-bottom: 1px solid #999;
+      background-color: #f0f0f0;
+      z-index: 10;
+      padding: 5px;
+    }
+    div[aria-label="Éditeur de document"] {
+      padding: 5px;
+      margin: 5px;  /* Pour l'éditeur Tiptap */
+
+    }
+  }
+</style>

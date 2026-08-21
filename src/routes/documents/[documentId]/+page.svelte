@@ -36,9 +36,7 @@
     });
 </script>
 
-<h1>Welcome to Jixie</h1>
-
-<p>Document : {data.documentId}</p>
+<p><a href="/">Jixie home</a> > Document : {data.documentId}</p>
 
 {#if ydoc && documentService}
     <Editor
