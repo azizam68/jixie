@@ -1,4 +1,3 @@
-# .github/ISSUE_TEMPLATE/feature_request.yml
 name: 💡 Suggestion
 description: Une idée pour améliorer le projet
 labels: ["enhancement"]
