@@ -4,6 +4,7 @@
   import StarterKit from "@tiptap/starter-kit";
   import * as Y from "yjs";
   import Collaboration from "@tiptap/extension-collaboration";
+import TextAlign from '@tiptap/extension-text-align'
 
   let {
     ydoc,
@@ -21,12 +22,14 @@
   let boldActive = $state(false);
   let italicActive = $state(false);
   let underlineActive = $state(false);
+  let justifyActive = $state(false);
   let saveStatus = $state<"saved" | "saving" | "error">("saved");
 
   function updateToolbarState() {
     boldActive = editor.isActive("bold");
     italicActive = editor.isActive("italic");
     underlineActive = editor.isActive("underline");
+    justifyActive = editor.isActive({ textAlign: "justify" });
   }
 
   function scheduleSave() {
@@ -60,13 +63,16 @@
         Collaboration.configure({
           document: ydoc,
         }),
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        }), 
       ],
 
       onUpdate: ({ editor }) => {
         boldActive = editor.isActive("bold");
         italicActive = editor.isActive("italic");
         underlineActive = editor.isActive("underline");
-
+        justifyActive = editor.isActive({ textAlign: "justify" });
         if (ydoc && onSave) {
           scheduleSave();
         }
@@ -76,6 +82,7 @@
         boldActive = editor.isActive("bold");
         italicActive = editor.isActive("italic");
         underlineActive = editor.isActive("underline");
+        justifyActive = editor.isActive({ textAlign: "justify" });
       },
     });
 
@@ -97,6 +104,14 @@
     editor.chain().focus().toggleUnderline().run();
     updateToolbarState();
   }
+  function toggleJustify() {
+  if (editor.isActive({ textAlign: "justify" })) {
+    editor.chain().focus().unsetTextAlign().run();
+  } else {
+    editor.chain().focus().setTextAlign("justify").run();
+  }
+  updateToolbarState();
+}
 </script>
 
 <div id="editor-container">
@@ -121,6 +136,13 @@
       aria-label="Underline"
       aria-pressed={underlineActive}
       >Underline
+    </button>
+    <button
+      type="button"
+      onclick={toggleJustify}
+      aria-label="Justify"
+      aria-pressed={justifyActive}
+      >Justify
     </button>
 
     {#if saveStatus === "saving"}

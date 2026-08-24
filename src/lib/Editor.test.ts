@@ -8,18 +8,18 @@ import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 
 function renderEditor(
-    ydoc = new Y.Doc(),
-    onSave?: (ydoc: Y.Doc) => Promise<void>
+  ydoc = new Y.Doc(),
+  onSave?: (ydoc: Y.Doc) => Promise<void>
 ) {
-    const documentId = crypto.randomUUID();
+  const documentId = crypto.randomUUID();
 
-    return render(Editor, {
-        props: {
-            ydoc,
-            documentId,
-            onSave
-        }
-    });
+  return render(Editor, {
+    props: {
+      ydoc,
+      documentId,
+      onSave
+    }
+  });
 }
 
 describe("Éditeur", () => {
@@ -392,19 +392,19 @@ describe("Éditeur", () => {
     await waitFor(() => {
       expect(saveDocument).toHaveBeenCalledTimes(1);
     });
-  }); 
+  });
   it("affiche le contenu du document chargé", async () => {
     const ydoc = new Y.Doc();
 
     const sourceEditor = new TiptapEditor({
-        extensions: [
-            StarterKit.configure({
-                undoRedo: false,
-            }),
-            Collaboration.configure({
-                document: ydoc,
-            }),
-        ],
+      extensions: [
+        StarterKit.configure({
+          undoRedo: false,
+        }),
+        Collaboration.configure({
+          document: ydoc,
+        }),
+      ],
     });
 
     sourceEditor.commands.setContent("<p>Bonjour Jixie</p>");
@@ -414,19 +414,19 @@ describe("Éditeur", () => {
     const documentId = crypto.randomUUID();
 
     render(Editor, {
-        props: {
-            ydoc,
-            documentId,
-        },
+      props: {
+        ydoc,
+        documentId,
+      },
     });
 
     const textbox = screen.getByRole("textbox");
 
     await waitFor(() => {
-        expect(textbox).toHaveTextContent("Bonjour Jixie");
+      expect(textbox).toHaveTextContent("Bonjour Jixie");
     });
-});
-// italic
+  });
+  // italic
   it("permet de mettre du texte en italic #1 - le texte ne doit pas etre en italic", async () => {
     const user = userEvent.setup();
 
@@ -438,7 +438,7 @@ describe("Éditeur", () => {
 
     expect(textbox.querySelector("italic")).not.toBeInTheDocument();
   });
-it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
+  it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
     const user = userEvent.setup();
 
     renderEditor();
@@ -511,8 +511,8 @@ it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
 
     expect(italicButton).toHaveAttribute("aria-pressed", "true");
   });
-  
-// underline
+
+  // underline
   it("permet de mettre du texte en underline #1 - le texte ne doit pas etre en underline", async () => {
     const user = userEvent.setup();
 
@@ -524,7 +524,7 @@ it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
 
     expect(textbox.querySelector("u")).not.toBeInTheDocument();
   });
-it("permet de mettre du texte en underline #2 - le bouton existe", async () => {
+  it("permet de mettre du texte en underline #2 - le bouton existe", async () => {
     const user = userEvent.setup();
 
     renderEditor();
@@ -599,8 +599,8 @@ it("permet de mettre du texte en underline #2 - le bouton existe", async () => {
   });
 
 
-// italic
-  it("permet de mettre du texte en italic #1 - le texte ne doit pas etre en italic", async () => {
+  // justify
+  it("permet de justifier l'aligment du texte #1 - le texte ne doit pas etre justifié", async () => {
     const user = userEvent.setup();
 
     renderEditor();
@@ -609,9 +609,10 @@ it("permet de mettre du texte en underline #2 - le bouton existe", async () => {
 
     await user.type(textbox, "Bonjour");
 
-    expect(textbox.querySelector("italic")).not.toBeInTheDocument();
+    expect(textbox.querySelector("p[style='text-align: justify']")).not.toBeInTheDocument();
   });
-it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
+  
+  it("permet de justifier l'aligment du texte #2 - le bouton existe", async () => {
     const user = userEvent.setup();
 
     renderEditor();
@@ -619,70 +620,85 @@ it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
     const textbox = screen.getByRole("textbox");
     await user.type(textbox, "Bonjour Jixie");
 
-    const italicButton = screen.getByRole("button", { name: "Italic" });
+    const justifyButton = screen.getByRole("button", { name: "Justify" });
 
-    expect(italicButton).toBeInTheDocument();
+    expect(justifyButton).toBeInTheDocument();
   });
 
-  it("permet de mettre du texte en italic #3", async () => {
+  it("permet de justifier l'aligment du texte #3", async () => {
     const user = userEvent.setup();
 
     renderEditor();
 
     const textbox = screen.getByRole("textbox");
-    const italicButton = screen.getByRole("button", { name: "Italic" });
+    const justifyButton = screen.getByRole("button", { name: "Justify" });
 
-    await user.type(textbox, "Bonjour Jixie");
-    await user.tripleClick(textbox);
-    await user.click(italicButton);
+await user.type(textbox, "Bonjour Jixie");
+await user.tripleClick(textbox);
+//console.log("Before click, aria-pressed:", justifyButton.getAttribute("aria-pressed"));
 
-    const emElement = textbox.querySelector("em");
+await user.click(justifyButton);
+//console.log("After click:", textbox.innerHTML);
 
-    expect(emElement).toBeInTheDocument();
-    expect(emElement).toHaveTextContent("Bonjour Jixie");
+const pElement = Array.from(textbox.querySelectorAll("p")).find((p) =>
+  p.textContent?.includes("Bonjour Jixie")
+);
+    expect(pElement).toHaveStyle({ textAlign: "justify" });
+    expect(pElement).toBeInTheDocument();
+    expect(pElement).toHaveTextContent("Bonjour Jixie");
   });
 
-  it("permet de supprimer l'italic", async () => {
+it("permet de supprimer l'alignement justifié du texte", async () => {
+  const user = userEvent.setup();
+
+  renderEditor();
+
+  const textbox = screen.getByRole("textbox");
+  const justifyButton = screen.getByRole("button", { name: "Justify" });
+
+  // 1. Écrire le texte
+  await user.type(textbox, "Bonjour Jixie");
+
+  // 2. Sélectionner tout le texte
+  await user.tripleClick(textbox);
+
+  // 3. Appliquer l'alignement justifié
+  await user.click(justifyButton);
+
+  const pElement = Array.from(textbox.querySelectorAll("p")).find((p) =>
+    p.textContent?.includes("Bonjour Jixie")
+  );
+
+  expect(pElement).toHaveStyle({ textAlign: "justify" });
+
+  // 4. Re-sélectionner le texte
+  await user.tripleClick(textbox);
+
+  // 5. Retirer l'alignement justifié
+  await user.click(justifyButton);
+
+  // 6. Vérifier que le texte n'est plus justifié
+  expect(pElement).not.toHaveStyle({ textAlign: "justify" });
+});
+  
+  it("indique quand le curseur est dans un texte justifié", async () => {
     const user = userEvent.setup();
 
     renderEditor();
 
     const textbox = screen.getByRole("textbox");
-    const italicButton = screen.getByRole("button", { name: "Italic" });
-
-    // 1. Écrire le texte
-    await user.type(textbox, "Bonjour Jixie");
-
-    // 2. Sélectionner tout le texte
-    await user.tripleClick(textbox);
-
-    // 3. Mettre en italic
-    await user.click(italicButton);
-
-    // 4. Re-sélectionner le texte
-    await user.tripleClick(textbox);
-
-    // 5. Retirer l'italic
-    await user.click(italicButton);
-
-    // 6. Vérifier que le texte n'est plus en italic
-    expect(textbox.querySelector("em")).not.toBeInTheDocument();
-  });
-  it("indique quand le curseur est dans un texte en italic", async () => {
-    const user = userEvent.setup();
-
-    renderEditor();
-
-    const textbox = screen.getByRole("textbox");
-    const italicButton = screen.getByRole("button", { name: "Italic" });
+    const justifyButton = screen.getByRole("button", { name: "Justify" });
 
     await user.type(textbox, "Bonjour Jixie");
     await user.tripleClick(textbox);
-    await user.click(italicButton);
+    await user.click(justifyButton);
 
-    expect(textbox.querySelector("em")).toHaveTextContent("Bonjour Jixie");
 
-    expect(italicButton).toHaveAttribute("aria-pressed", "true");
+  const pElement = Array.from(textbox.querySelectorAll("p")).find((p) =>
+    p.textContent?.includes("Bonjour Jixie")
+  );
+
+    expect(pElement).toHaveTextContent("Bonjour Jixie");
+    expect(justifyButton).toHaveAttribute("aria-pressed", "true");
   });
-
 });
