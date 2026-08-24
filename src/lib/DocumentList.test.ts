@@ -31,24 +31,16 @@ const onSelect = vi.fn();
 	).toBeInTheDocument();
 });
 it('permet de sélectionner un document', async () => {
-	const documents = [
-		{
-			id: 42,
-			title: 'Mon document',
-		},
-	];
-
-	const onSelect = vi.fn();
-
-	render(DocumentList, {
-		documents,
-		onSelect,
-	});
-
-	const document = screen.getByText('Mon document');
-
-	await userEvent.click(document);
-
-	expect(onSelect).toHaveBeenCalledWith("Mon document");
+	  const onSelect = vi.fn();
+  const documents = [{ title: 'Mon document' }];
+  
+  render(DocumentList, { 
+    props: { documents, onSelect } 
+  });
+  
+  const button = screen.getByRole('button', { name: 'open' });
+  await userEvent.click(button);
+  
+  expect(onSelect).toHaveBeenCalledWith('Mon document');
 });
 });
