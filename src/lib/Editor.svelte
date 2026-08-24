@@ -19,10 +19,14 @@
   let editor: TiptapEditor;
   let saveTimeout: ReturnType<typeof setTimeout> | undefined;
   let boldActive = $state(false);
+  let italicActive = $state(false);
+  let underlineActive = $state(false);
   let saveStatus = $state<"saved" | "saving" | "error">("saved");
 
   function updateToolbarState() {
     boldActive = editor.isActive("bold");
+    italicActive = editor.isActive("italic");
+    underlineActive = editor.isActive("underline");
   }
 
   function scheduleSave() {
@@ -60,6 +64,9 @@
 
       onUpdate: ({ editor }) => {
         boldActive = editor.isActive("bold");
+        italicActive = editor.isActive("italic");
+        underlineActive = editor.isActive("underline");
+
         if (ydoc && onSave) {
           scheduleSave();
         }
@@ -67,6 +74,8 @@
 
       onSelectionUpdate: ({ editor }) => {
         boldActive = editor.isActive("bold");
+        italicActive = editor.isActive("italic");
+        underlineActive = editor.isActive("underline");
       },
     });
 
@@ -80,6 +89,14 @@
     editor.chain().focus().toggleBold().run();
     updateToolbarState();
   }
+  function toggleItalic() {
+    editor.chain().focus().toggleItalic().run();
+    updateToolbarState();
+  }
+  function toggleUnderline() {
+    editor.chain().focus().toggleUnderline().run();
+    updateToolbarState();
+  }
 </script>
 
 <div id="editor-container">
@@ -90,6 +107,20 @@
       aria-label="Gras"
       aria-pressed={boldActive}
       >Gras
+    </button>
+    <button
+      type="button"
+      onclick={toggleItalic}
+      aria-label="Italic"
+      aria-pressed={italicActive}
+      >Italic
+    </button>
+    <button
+      type="button"
+      onclick={toggleUnderline}
+      aria-label="Underline"
+      aria-pressed={underlineActive}
+      >Underline
     </button>
 
     {#if saveStatus === "saving"}
@@ -128,6 +159,9 @@
       padding: 5px;
       margin: 5px;  /* Pour l'éditeur Tiptap */
 
+    }
+    button[aria-pressed="true"] {
+      background-color: #ddd;
     }
   }
 </style>

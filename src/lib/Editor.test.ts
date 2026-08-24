@@ -81,8 +81,6 @@ describe("Éditeur", () => {
   });
 
   // tests gras...
-
-
   it("permet de mettre du texte en gras #1 - le texte ne doit pas etre gras", async () => {
     const user = userEvent.setup();
 
@@ -108,7 +106,7 @@ describe("Éditeur", () => {
     expect(boldButton).toBeInTheDocument();
   });
 
-  it("permet de mettre du texte en gras", async () => {
+  it("permet de mettre du texte en gras #3", async () => {
     const user = userEvent.setup();
 
     renderEditor();
@@ -168,8 +166,6 @@ describe("Éditeur", () => {
 
     expect(boldButton).toHaveAttribute("aria-pressed", "true");
   });
-
-
   it("affiche le contenu existant dans un document Yjs", async () => {
     const ydoc = new Y.Doc();
 
@@ -430,4 +426,263 @@ describe("Éditeur", () => {
         expect(textbox).toHaveTextContent("Bonjour Jixie");
     });
 });
+// italic
+  it("permet de mettre du texte en italic #1 - le texte ne doit pas etre en italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour");
+
+    expect(textbox.querySelector("italic")).not.toBeInTheDocument();
+  });
+it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    await user.type(textbox, "Bonjour Jixie");
+
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    expect(italicButton).toBeInTheDocument();
+  });
+
+  it("permet de mettre du texte en italic #3", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(italicButton);
+
+    const emElement = textbox.querySelector("em");
+
+    expect(emElement).toBeInTheDocument();
+    expect(emElement).toHaveTextContent("Bonjour Jixie");
+  });
+
+  it("permet de supprimer l'italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    // 1. Écrire le texte
+    await user.type(textbox, "Bonjour Jixie");
+
+    // 2. Sélectionner tout le texte
+    await user.tripleClick(textbox);
+
+    // 3. Mettre en italic
+    await user.click(italicButton);
+
+    // 4. Re-sélectionner le texte
+    await user.tripleClick(textbox);
+
+    // 5. Retirer l'italic
+    await user.click(italicButton);
+
+    // 6. Vérifier que le texte n'est plus en italic
+    expect(textbox.querySelector("em")).not.toBeInTheDocument();
+  });
+  it("indique quand le curseur est dans un texte en italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(italicButton);
+
+    expect(textbox.querySelector("em")).toHaveTextContent("Bonjour Jixie");
+
+    expect(italicButton).toHaveAttribute("aria-pressed", "true");
+  });
+  
+// underline
+  it("permet de mettre du texte en underline #1 - le texte ne doit pas etre en underline", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour");
+
+    expect(textbox.querySelector("u")).not.toBeInTheDocument();
+  });
+it("permet de mettre du texte en underline #2 - le bouton existe", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    await user.type(textbox, "Bonjour Jixie");
+
+    const underlineButton = screen.getByRole("button", { name: "Underline" });
+
+    expect(underlineButton).toBeInTheDocument();
+  });
+
+  it("permet de mettre du texte en underline #3", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const underlineButton = screen.getByRole("button", { name: "Underline" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(underlineButton);
+
+    const uElement = textbox.querySelector("u");
+
+    expect(uElement).toBeInTheDocument();
+    expect(uElement).toHaveTextContent("Bonjour Jixie");
+  });
+
+  it("permet de supprimer l'underline", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const underlineButton = screen.getByRole("button", { name: "Underline" });
+
+    // 1. Écrire le texte
+    await user.type(textbox, "Bonjour Jixie");
+
+    // 2. Sélectionner tout le texte
+    await user.tripleClick(textbox);
+
+    // 3. Mettre en underline
+    await user.click(underlineButton);
+
+    // 4. Re-sélectionner le texte
+    await user.tripleClick(textbox);
+
+    // 5. Retirer l'underline
+    await user.click(underlineButton);
+
+    // 6. Vérifier que le texte n'est plus en underline
+    expect(textbox.querySelector("u")).not.toBeInTheDocument();
+  });
+  it("indique quand le curseur est dans un texte en underline", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const underlineButton = screen.getByRole("button", { name: "Underline" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(underlineButton);
+
+    expect(textbox.querySelector("u")).toHaveTextContent("Bonjour Jixie");
+
+    expect(underlineButton).toHaveAttribute("aria-pressed", "true");
+  });
+
+
+// italic
+  it("permet de mettre du texte en italic #1 - le texte ne doit pas etre en italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+
+    await user.type(textbox, "Bonjour");
+
+    expect(textbox.querySelector("italic")).not.toBeInTheDocument();
+  });
+it("permet de mettre du texte en italic #2 - le bouton existe", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    await user.type(textbox, "Bonjour Jixie");
+
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    expect(italicButton).toBeInTheDocument();
+  });
+
+  it("permet de mettre du texte en italic #3", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(italicButton);
+
+    const emElement = textbox.querySelector("em");
+
+    expect(emElement).toBeInTheDocument();
+    expect(emElement).toHaveTextContent("Bonjour Jixie");
+  });
+
+  it("permet de supprimer l'italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    // 1. Écrire le texte
+    await user.type(textbox, "Bonjour Jixie");
+
+    // 2. Sélectionner tout le texte
+    await user.tripleClick(textbox);
+
+    // 3. Mettre en italic
+    await user.click(italicButton);
+
+    // 4. Re-sélectionner le texte
+    await user.tripleClick(textbox);
+
+    // 5. Retirer l'italic
+    await user.click(italicButton);
+
+    // 6. Vérifier que le texte n'est plus en italic
+    expect(textbox.querySelector("em")).not.toBeInTheDocument();
+  });
+  it("indique quand le curseur est dans un texte en italic", async () => {
+    const user = userEvent.setup();
+
+    renderEditor();
+
+    const textbox = screen.getByRole("textbox");
+    const italicButton = screen.getByRole("button", { name: "Italic" });
+
+    await user.type(textbox, "Bonjour Jixie");
+    await user.tripleClick(textbox);
+    await user.click(italicButton);
+
+    expect(textbox.querySelector("em")).toHaveTextContent("Bonjour Jixie");
+
+    expect(italicButton).toHaveAttribute("aria-pressed", "true");
+  });
+
 });
