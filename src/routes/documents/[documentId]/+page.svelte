@@ -4,6 +4,7 @@
     import { createClient } from "@supabase/supabase-js";
 
     import Editor from "$lib/Editor.svelte";
+    import DocumentTitle from "$lib/DocumentTitle.svelte";
     import { SupabaseConfigService } from "$lib/services/SupabaseConfigService";
     import { DocumentRepository } from "$lib/repositories/DocumentRepository";
     import { DocumentService } from "$lib/services/DocumentService";
@@ -36,7 +37,9 @@
     });
 </script>
 
-<p><a href="/">Jixie home</a> > Document : {data.documentId}</p>
+<p style="display:flex; flex-direction:row; gap: 0.5rem; align-items:center;    ">
+    <a href="/">Jixie home</a> > <DocumentTitle data={data} />
+</p>
 
 {#if ydoc && documentService}
     <Editor
