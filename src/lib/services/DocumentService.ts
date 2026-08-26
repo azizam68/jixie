@@ -1,12 +1,22 @@
 import * as Y from "yjs";
 import type { IDocumentListItem, IDocumentRepository } from "../repositories/IDocumentRepository";
 
+
+const MAX_TITLE_LENGTH = 255; // à ajuster selon ton besoin
+
+export class TitleTooLongError extends Error {
+    constructor(maxLength: number) {
+        super(`Title exceeds maximum length of ${maxLength} characters`);
+        this.name = "TitleTooLongError";
+    }
+}
+
 export class DocumentService {
-    constructor(private repository: IDocumentRepository) {}
+    constructor(private repository: IDocumentRepository) { }
 
     async list(): Promise<IDocumentListItem[]> {
-		return this.repository.list();
-	}
+        return this.repository.list();
+    }
     async load(documentId: string): Promise<Y.Doc> {
         return this.repository.load(documentId);
     }
@@ -15,13 +25,13 @@ export class DocumentService {
         await this.repository.save(documentId, ydoc);
     }
 
-    async loadVersion(versionId: number): Promise<Y.Doc> {
+    async loadVersion(versionId: string): Promise<Y.Doc> {
         return this.repository.loadVersion(versionId);
     }
 
     async restoreVersion(
         documentId: string,
-        versionId: number
+        versionId: string
     ): Promise<void> {
         await this.repository.restoreVersion(documentId, versionId);
     }
@@ -37,7 +47,20 @@ export class DocumentService {
             throw error;
         }
     }
+    
     async create(): Promise<string> {
-    return this.repository.create();
-}
+        return this.repository.create();
+    }
+
+    async getDocumentTitle(documentId: string): Promise<{ title: string }> {
+        return  this.repository.getTitle(documentId);
+    }
+
+    async updateDocumentTitle(id: string, title: string): Promise<{ title: string }> {
+        if (title.length > MAX_TITLE_LENGTH) {
+            throw new TitleTooLongError(MAX_TITLE_LENGTH);
+        }
+
+        return this.repository.updateTitle(id, title);
+    }
 }

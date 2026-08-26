@@ -10,6 +10,7 @@
     import { DocumentService } from "$lib/services/DocumentService";
 
     let { data } = $props();
+    let titleIsReady = $state(false);
 
     let ydoc: Y.Doc | undefined = $state();
 
@@ -32,15 +33,19 @@
         const repository = new DocumentRepository(supabase);
 
         documentService = new DocumentService(repository);
-
+        let res = await documentService.getDocumentTitle(data.documentId);
+        data.title = res.title;
+        titleIsReady = true;
         ydoc = await documentService.load(data.documentId);
     });
 </script>
 
-<p style="display:flex; flex-direction:row; gap: 0.5rem; align-items:center;    ">
-    <a href="/">Jixie home</a> > <DocumentTitle data={data} />
-</p>
-
+{#if titleIsReady}
+    <p style="display:flex; flex-direction:row; gap: 0.5rem; align-items:center;">
+        <a href="/">Jixie home</a> >
+        <DocumentTitle {data} onTitleSave={(id, title) => documentService!.updateDocumentTitle(id, title)} />
+    </p>
+{/if}
 {#if ydoc && documentService}
     <Editor
         {ydoc}

@@ -99,6 +99,6 @@ onMount(() => {
 {/if}
   <button type="button" onclick={createDocument}> Nouveau document </button>
 </div>
-<DocumentList documents={documents} onSelect={(title) => goto(`/documents/${title}`)} />
+<DocumentList documents={documents} onSelect={(id) => goto(`/documents/${id}`)} />
 </div>
 {/if}
