@@ -1,7 +1,7 @@
 import type * as Y from "yjs";
 
 export interface IDocumentListItem {
-    id: Number;
+    id: string;
     title: string;
 }
 
@@ -10,14 +10,17 @@ export interface IDocumentRepository {
 
     load(id: string): Promise<Y.Doc>;
 
-    loadVersion(versionId: number): Promise<Y.Doc>;
+    loadVersion(versionId: string): Promise<Y.Doc>;
 
     restoreVersion(
         documentId: string,
-        versionId: number
+        versionId: string
     ): Promise<void>;
 
     create(): Promise<string>;
 
     list():Promise<IDocumentListItem[]>;
+
+    getTitle(id: string): Promise<{ title: string }>;
+    updateTitle(id: string, title: string): Promise<{ title: string }>;
 }

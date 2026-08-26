@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as Y from "yjs";
-import { DocumentService } from "./DocumentService";
+import { DocumentService, TitleTooLongError } from "./DocumentService";
 import type { IDocumentRepository } from "../repositories/IDocumentRepository";
 
 describe("DocumentService", () => {
@@ -10,25 +10,27 @@ describe("DocumentService", () => {
         loadVersion: vi.fn(),
         restoreVersion: vi.fn(),
         create: vi.fn(),
+        getTitle: vi.fn(),
+        updateTitle: vi.fn(),
         list: async () => [
-		{
-			id: 654654,
-			title: 'Mon premier document',
-		}
-    ]
+            {
+                id: "86868686-86868686-868686868-868686868-8686868686",
+                title: 'Mon premier document',
+            }
+        ]
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-	it('retourne la liste des documents', async () => {
-		const service = new DocumentService(repositoryMock);
+    it('retourne la liste des documents', async () => {
+        const service = new DocumentService(repositoryMock);
 
-		const documents = await service.list();
+        const documents = await service.list();
 
-		expect(documents).toBeInstanceOf(Array);
-	});
+        expect(documents).toBeInstanceOf(Array);
+    });
     it('sauvegarde un document via le repository', async () => {
 
         const service = new DocumentService(repositoryMock);
@@ -57,30 +59,40 @@ describe("DocumentService", () => {
         expect(result).toBe(ydoc);
     });
     it("crée un nouveau document lorsqu'il n'existe pas", async () => {
-    const documentId = crypto.randomUUID();
+        const documentId = crypto.randomUUID();
 
-    vi.mocked(repositoryMock.load).mockRejectedValue(
-        new Error("Document introuvable")
-    );
+        vi.mocked(repositoryMock.load).mockRejectedValue(
+            new Error("Document introuvable")
+        );
 
-    const service = new DocumentService(repositoryMock);
+        const service = new DocumentService(repositoryMock);
 
-    const ydoc = await service.loadOrCreate(documentId);
+        const ydoc = await service.loadOrCreate(documentId);
 
-    expect(ydoc).toBeInstanceOf(Y.Doc);
-    expect(repositoryMock.load).toHaveBeenCalledWith(documentId);
-    expect(repositoryMock.save).not.toHaveBeenCalled();
-});
-it("crée un nouveau document via le repository", async () => {
-    const documentId = crypto.randomUUID();
+        expect(ydoc).toBeInstanceOf(Y.Doc);
+        expect(repositoryMock.load).toHaveBeenCalledWith(documentId);
+        expect(repositoryMock.save).not.toHaveBeenCalled();
+    });
+    it("crée un nouveau document via le repository", async () => {
+        const documentId = crypto.randomUUID();
 
-    vi.mocked(repositoryMock.create).mockResolvedValue(documentId);
+        vi.mocked(repositoryMock.create).mockResolvedValue(documentId);
 
-    const service = new DocumentService(repositoryMock);
+        const service = new DocumentService(repositoryMock);
 
-    const result = await service.create();
+        const result = await service.create();
 
-    expect(repositoryMock.create).toHaveBeenCalled();
-    expect(result).toBe(documentId);
-});
+        expect(repositoryMock.create).toHaveBeenCalled();
+        expect(result).toBe(documentId);
+    });
+    it("should reject a title that is too long without calling the repository", async () => {
+        const documentId = crypto.randomUUID();
+
+        vi.mocked(repositoryMock.create).mockResolvedValue(documentId);
+        const service = new DocumentService(repositoryMock);
+        const longTitle = "a".repeat(256);
+
+        await expect(service.updateDocumentTitle("doc-1", longTitle)).rejects.toThrow(TitleTooLongError);
+        expect(repositoryMock.updateTitle).not.toHaveBeenCalled();
+    });
 });

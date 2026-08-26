@@ -4,11 +4,18 @@
     import { createClient } from "@supabase/supabase-js";
 
     import Editor from "$lib/Editor.svelte";
+    import DocumentTitle from "$lib/DocumentTitle.svelte";
     import { SupabaseConfigService } from "$lib/services/SupabaseConfigService";
     import { DocumentRepository } from "$lib/repositories/DocumentRepository";
     import { DocumentService } from "$lib/services/DocumentService";
 
-    let { data } = $props();
+    let {
+        data,
+    }: {
+        data: { title: string; documentId: string };
+    } = $props();
+
+    let titleIsReady = $state(false);
 
     let ydoc: Y.Doc | undefined = $state();
 
@@ -31,13 +38,19 @@
         const repository = new DocumentRepository(supabase);
 
         documentService = new DocumentService(repository);
-
+        let res = await documentService.getDocumentTitle(data.documentId);
+        data.title = res.title;
+        titleIsReady = true;
         ydoc = await documentService.load(data.documentId);
     });
 </script>
 
-<p><a href="/">Jixie home</a> > Document : {data.documentId}</p>
-
+{#if titleIsReady}
+    <p style="display:flex; flex-direction:row; gap: 0.5rem; align-items:center;">
+        <a href="/">Jixie home</a> >
+        <DocumentTitle {data} onTitleSave={(id, title) => documentService!.updateDocumentTitle(id, title)} />
+    </p>
+{/if}
 {#if ydoc && documentService}
     <Editor
         {ydoc}

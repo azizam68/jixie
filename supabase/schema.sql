@@ -99,3 +99,23 @@ TO anon;
 GRANT SELECT, INSERT, UPDATE
 ON public.document_versions
 TO anon;
+
+
+--- 5. trigger pour créer une version à chaque mise à jour d'un document
+create or replace function set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger documents_set_updated_at
+before update on documents
+for each row
+execute function set_updated_at();
+
+-- 6. alter table pour ajouter un titre
+ALTER TABLE public.documents
+  ADD COLUMN title text;
+  

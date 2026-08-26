@@ -213,4 +213,46 @@ describe("DocumentRepository", () => {
 
         expect(loaded).toBeInstanceOf(Y.Doc);
     });
+    it("should return the confirmed title on success", async () => {
+        const documentId = crypto.randomUUID();
+
+        const repository = new DocumentRepository(supabase);
+
+        await repository.save(documentId, new Y.Doc());
+
+        const result = await repository.updateTitle(documentId, "New Title updated");
+
+        expect(result).toEqual({ title: "New Title updated" });
+
+        const { data, error } = await supabase
+            .from("documents")
+            .select("title")
+            .eq("id", documentId)
+            .single();
+
+        expect(error).toBeNull();
+        expect(data?.title).toBe("New Title updated");
+    });
+
+    it("should normalize a null title to an empty string", async () => {
+        const documentId = crypto.randomUUID();
+
+        const repository = new DocumentRepository(supabase);
+
+        await repository.save(documentId, new Y.Doc());
+
+        const result = await repository.updateTitle(documentId, "");
+
+        expect(result).toEqual({ title: "" });
+    });
+
+    it("should throw when Supabase returns an error", async () => {
+        const documentId = crypto.randomUUID();
+
+        const repository = new DocumentRepository(supabase);
+
+        await expect(repository.updateTitle(documentId, "Title")).rejects.toThrow(
+            "Failed to update title for document " + documentId 
+        );
+    });
 });
