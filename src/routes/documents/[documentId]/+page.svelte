@@ -9,7 +9,12 @@
     import { DocumentRepository } from "$lib/repositories/DocumentRepository";
     import { DocumentService } from "$lib/services/DocumentService";
 
-    let { data } = $props();
+    let {
+        data,
+    }: {
+        data: { title: string; documentId: string };
+    } = $props();
+
     let titleIsReady = $state(false);
 
     let ydoc: Y.Doc | undefined = $state();

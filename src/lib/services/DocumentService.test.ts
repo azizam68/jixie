@@ -14,7 +14,7 @@ describe("DocumentService", () => {
         updateTitle: vi.fn(),
         list: async () => [
             {
-                id: 654654,
+                id: "86868686-86868686-868686868-868686868-8686868686",
                 title: 'Mon premier document',
             }
         ]

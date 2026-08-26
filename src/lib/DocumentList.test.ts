@@ -7,11 +7,11 @@ describe('DocumentList', () => {
 	it('affiche les documents', () => {
 		const documents = [
 			{
-				id: 1,
+				id: "88888888-8888-8888-8888-888888888888",
 				title: 'Mon premier document',
 			},
 			{
-				id: 2,
+				id: "99999999-9999-9999-9999-999999999999",
 				title: 'Mon deuxième document',
 			},
 		];
@@ -32,7 +32,7 @@ describe('DocumentList', () => {
 	});
 	it('permet de sélectionner un document', async () => {
 		const onSelect = vi.fn();
-		const documents = [{ id: 1, title: 'Mon document' }];
+		const documents = [{ id: "88888888-8888-8888-8888-888888888888", title: 'Mon document' }];
 
 		render(DocumentList, {
 			props: { documents, onSelect }
@@ -41,6 +41,6 @@ describe('DocumentList', () => {
 		const button = screen.getByRole('button', { name: 'open' });
 		await userEvent.click(button);
 
-		expect(onSelect).toHaveBeenCalledWith('Mon document');
+		expect(onSelect).toHaveBeenCalledWith('88888888-8888-8888-8888-888888888888');
 	});
 });
