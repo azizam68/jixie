@@ -10,7 +10,7 @@
 	<p>Aucun document</p>
 {:else}
 {#each documents as document}
-	<div><button onclick={() => onSelect(document.title)}>open</button> {document.title}</div>
+	<div><button onclick={() => onSelect(document.id)}>open</button> {document.title||document.id}</div>
 {/each}
 {/if}
 
