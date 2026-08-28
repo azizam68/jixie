@@ -4,7 +4,7 @@
   import StarterKit from "@tiptap/starter-kit";
   import * as Y from "yjs";
   import Collaboration from "@tiptap/extension-collaboration";
-import TextAlign from '@tiptap/extension-text-align'
+  import TextAlign from "@tiptap/extension-text-align";
 
   let {
     ydoc,
@@ -22,6 +22,10 @@ import TextAlign from '@tiptap/extension-text-align'
   let boldActive = $state(false);
   let italicActive = $state(false);
   let underlineActive = $state(false);
+  let strikethroughActive = $state(false);
+  let leftAlignActive = $state(false);
+  let centerAlignActive = $state(false);
+  let rightAlignActive = $state(false);
   let justifyActive = $state(false);
   let saveStatus = $state<"saved" | "saving" | "error">("saved");
 
@@ -29,6 +33,10 @@ import TextAlign from '@tiptap/extension-text-align'
     boldActive = editor.isActive("bold");
     italicActive = editor.isActive("italic");
     underlineActive = editor.isActive("underline");
+    strikethroughActive = editor.isActive("strike");
+    leftAlignActive = editor.isActive({ textAlign: "left" });
+    centerAlignActive = editor.isActive({ textAlign: "center" });
+    rightAlignActive = editor.isActive({ textAlign: "right" });
     justifyActive = editor.isActive({ textAlign: "justify" });
   }
 
@@ -64,14 +72,18 @@ import TextAlign from '@tiptap/extension-text-align'
           document: ydoc,
         }),
         TextAlign.configure({
-          types: ['heading', 'paragraph'],
-        }), 
+          types: ["heading", "paragraph"],
+        }),
       ],
 
       onUpdate: ({ editor }) => {
         boldActive = editor.isActive("bold");
         italicActive = editor.isActive("italic");
         underlineActive = editor.isActive("underline");
+        strikethroughActive = editor.isActive("strike");
+        leftAlignActive = editor.isActive({ textAlign: "left" });
+        centerAlignActive = editor.isActive({ textAlign: "center" });
+        rightAlignActive = editor.isActive({ textAlign: "right" });
         justifyActive = editor.isActive({ textAlign: "justify" });
         if (ydoc && onSave) {
           scheduleSave();
@@ -82,6 +94,10 @@ import TextAlign from '@tiptap/extension-text-align'
         boldActive = editor.isActive("bold");
         italicActive = editor.isActive("italic");
         underlineActive = editor.isActive("underline");
+        strikethroughActive = editor.isActive("strike");
+        leftAlignActive = editor.isActive({ textAlign: "left" });
+        centerAlignActive = editor.isActive({ textAlign: "center" });
+        rightAlignActive = editor.isActive({ textAlign: "right" });
         justifyActive = editor.isActive({ textAlign: "justify" });
       },
     });
@@ -104,46 +120,112 @@ import TextAlign from '@tiptap/extension-text-align'
     editor.chain().focus().toggleUnderline().run();
     updateToolbarState();
   }
-  function toggleJustify() {
-  if (editor.isActive({ textAlign: "justify" })) {
-    editor.chain().focus().unsetTextAlign().run();
-  } else {
-    editor.chain().focus().setTextAlign("justify").run();
+  function toggleStrikethrough() {
+    editor.chain().focus().toggleStrike().run();
+    updateToolbarState();
+  }  
+  function toggleLeftAlign() {
+    if (editor.isActive({ textAlign: "left" })) {
+      editor.chain().focus().unsetTextAlign().run();
+    } else {
+      editor.chain().focus().setTextAlign("left").run();
+    }
+    updateToolbarState();
+  }  function toggleCenterAlign() {
+    if (editor.isActive({ textAlign: "center" })) {
+      editor.chain().focus().unsetTextAlign().run();
+    } else {
+      editor.chain().focus().setTextAlign("center").run();
+    }
+    updateToolbarState();
+  }  function toggleRightAlign() {
+    if (editor.isActive({ textAlign: "right" })) {
+      editor.chain().focus().unsetTextAlign().run();
+    } else {
+      editor.chain().focus().setTextAlign("right").run();
+    }
+    updateToolbarState();
   }
-  updateToolbarState();
-}
+  function toggleJustify() {
+    if (editor.isActive({ textAlign: "justify" })) {
+      editor.chain().focus().unsetTextAlign().run();
+    } else {
+      editor.chain().focus().setTextAlign("justify").run();
+    }
+    updateToolbarState();
+  }
 </script>
 
 <div id="editor-container">
   <div id="editor-toolbar">
-    <button
-      type="button"
-      onclick={toggleBold}
-      aria-label="Gras"
-      aria-pressed={boldActive}
-      >Gras
-    </button>
-    <button
-      type="button"
-      onclick={toggleItalic}
-      aria-label="Italic"
-      aria-pressed={italicActive}
-      >Italic
-    </button>
-    <button
-      type="button"
-      onclick={toggleUnderline}
-      aria-label="Underline"
-      aria-pressed={underlineActive}
-      >Underline
-    </button>
-    <button
-      type="button"
-      onclick={toggleJustify}
-      aria-label="Justify"
-      aria-pressed={justifyActive}
-      >Justify
-    </button>
+    <div class="editor-toolbar-group">
+      <button
+        type="button"
+        onclick={toggleBold}
+        aria-label="Gras"
+        aria-pressed={boldActive}
+        class="fa fa-bold"
+      >
+      </button>
+      <button
+        type="button"
+        onclick={toggleItalic}
+        aria-label="Italic"
+        aria-pressed={italicActive}
+        class="fa fa-italic"
+      >
+      </button>
+      <button
+        type="button"
+        onclick={toggleUnderline}
+        aria-label="Underline"
+        aria-pressed={underlineActive}
+        class="fa fa-underline"
+      >
+      </button>
+      <button
+        type="button"
+        onclick={toggleStrikethrough}
+        aria-label="Strikethrough"
+        aria-pressed={strikethroughActive}
+        class="fa fa-strikethrough"
+      >
+      </button>
+    </div>
+    <div class="editor-toolbar-group">
+      <button
+        class="fa fa-align-left"
+        type="button"
+        onclick={toggleLeftAlign}
+        aria-label="Left Align"
+        aria-pressed={leftAlignActive}
+      >
+      </button>
+      <button
+        class="fa fa-align-center"
+        type="button"
+        onclick={toggleCenterAlign}
+        aria-label="Center Align"
+        aria-pressed={centerAlignActive}
+      >
+      </button>
+      <button
+        class="fa fa-align-right"
+        type="button"
+        onclick={toggleRightAlign}
+        aria-label="Right Align"
+        aria-pressed={rightAlignActive}
+      >
+      </button>
+      <button
+        class="fa fa-align-justify"
+        type="button"
+        onclick={toggleJustify}
+        aria-label="Justify"
+        aria-pressed={justifyActive}
+      >
+      </button>
+    </div>
 
     {#if saveStatus === "saving"}
       <span>Enregistrement…</span>
@@ -154,7 +236,11 @@ import TextAlign from '@tiptap/extension-text-align'
     {/if}
   </div>
 
-  <div bind:this={editorElement} aria-label="Éditeur de document" style="border: none;"></div>
+  <div
+    bind:this={editorElement}
+    aria-label="Éditeur de document"
+    style="border: none;"
+  ></div>
 </div>
 
 <style>
@@ -164,23 +250,38 @@ import TextAlign from '@tiptap/extension-text-align'
     border: 1px solid black;
     margin: 0px;
     padding: 0px;
-    position:relative;
+    position: relative;
 
     #editor-toolbar {
       position: sticky;
       display: flex;
       flex-direction: row;
+      flex-wrap: wrap;
       gap: 10px;
-      top:0;
+      top: 0;
       border-bottom: 1px solid #999;
       background-color: #f0f0f0;
       z-index: 10;
       padding: 5px;
     }
+
+    .editor-toolbar-group {
+      display: flex;
+      flex-direction: row;
+      gap: 0px;
+      border: 1px solid #999;
+
+      button {
+        border: none;
+        background-color: #f0f0f0;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+    }
+
     div[aria-label="Éditeur de document"] {
       padding: 5px;
-      margin: 5px;  /* Pour l'éditeur Tiptap */
-
+      margin: 5px; /* Pour l'éditeur Tiptap */
     }
     button[aria-pressed="true"] {
       background-color: #ddd;

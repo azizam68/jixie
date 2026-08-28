@@ -32,6 +32,11 @@ const marks: MarkConfig[] = [
     buttonName: "Underline",
     getElement: (textbox) => textbox.querySelector("u"),
   },
+  {
+    markName: "strikethrough",
+    buttonName: "Strikethrough",
+    getElement: (textbox) => textbox.querySelector("s"),
+  },
 ];
 
 describe.each(marks)(
