@@ -236,7 +236,8 @@
     {/if}
   </div>
 
-  <div
+  <div 
+    spellcheck={false}
     bind:this={editorElement}
     aria-label="Éditeur de document"
     style="border: none;"
