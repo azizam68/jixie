@@ -6,8 +6,8 @@
   import { DocumentRepository } from "$lib/repositories/DocumentRepository";
   import type { IDocumentListItem } from "$lib/repositories/IDocumentRepository";
   import { DocumentService } from "$lib/services/DocumentService";
-	import DocumentList from '$lib/DocumentList.svelte';
-import { onMount } from "svelte";
+  import DocumentList from "$lib/DocumentList.svelte";
+  import { onMount } from "svelte";
 
   const supabaseConfigService = new SupabaseConfigService();
   let url = $state("");
@@ -15,26 +15,24 @@ import { onMount } from "svelte";
   let documents = $state<IDocumentListItem[]>([]);
   let lastDocumentId = $state<string | null>(null);
 
-  async function loadDocumentList(){
+  async function loadDocumentList() {
     if (!url || !key) return;
 
     const supabase = createClient(url, key);
     const repository = new DocumentRepository(supabase);
     const documentService = new DocumentService(repository);
 
-    documents = await documentService.list() || [];
+    documents = (await documentService.list()) || [];
   }
 
-
-onMount(() => {
+  onMount(() => {
     if (!browser) return;
 
     const config = supabaseConfigService.load();
     url = config?.url ?? "";
     key = config?.key ?? "";
     lastDocumentId = localStorage.getItem("jixie.lastDocumentId");
-    if(url!="" && key!="")
-      loadDocumentList();
+    if (url != "" && key != "") loadDocumentList();
   });
   async function saveConfig() {
     supabaseConfigService.save({
@@ -46,9 +44,23 @@ onMount(() => {
     supabaseConfigService.clear();
   }
 
+  async function deleteDocument(selectedIds: string[]) {
+    if (!url || !key) return;
+
+    const supabase = createClient(url, key);
+    const repository = new DocumentRepository(supabase);
+    const documentService = new DocumentService(repository);
+
+    for (const refId of selectedIds) {
+      await documentService.delete(refId);
+      const index = documents.findIndex((f) => f.id == refId);
+      documents.splice(index, 1);
+    }
+  }
+
   async function createDocument() {
     if (!url || !key) return;
-    if (url=="" || key==="") return;
+    if (url == "" || key === "") return;
 
     const supabase = createClient(url, key);
 
@@ -92,13 +104,17 @@ onMount(() => {
   <button type="button" onclick={clearConfig}> Effacer </button>
 </form>
 {#if url && key}
-<div>
-<div>
-{#if lastDocumentId}
-  <a href={`/documents/${lastDocumentId}`}> Continuer mon document </a>
-{/if}
-  <button type="button" onclick={createDocument}> Nouveau document </button>
-</div>
-<DocumentList documents={documents} onSelect={(id) => goto(`/documents/${id}`)} />
-</div>
+  <div>
+    <div>
+      {#if lastDocumentId}
+        <a href={`/documents/${lastDocumentId}`}> Continuer mon document </a>
+      {/if}
+      <button type="button" onclick={createDocument}> Nouveau document </button>
+    </div>
+    <DocumentList
+      {documents}
+      onSelect={(id) => goto(`/documents/${id}`)}
+      onDelete={(id) => deleteDocument(id)}
+    />
+  </div>
 {/if}

@@ -4,10 +4,31 @@
 	let {
 		documents,
 		onSelect,
+		onDelete
 	}: {
 		documents: IDocumentListItem[];
 		onSelect: (title: string) => void;
+		onDelete: (ids: string[]) => void;
 	} = $props();
+
+	let selectedIndices = $state(new Set());
+
+  // État dérivé pour les IDs sélectionnés
+  const selectedIds = $derived(
+    documents
+      .filter((_, index) => selectedIndices.has(index))
+      .map(doc => doc.id)
+  );
+
+  function toggleSelection(index :number) {
+    if (selectedIndices.has(index)) {
+      selectedIndices.delete(index);
+    } else {
+      selectedIndices.add(index);
+    }
+    selectedIndices = new Set(selectedIndices);
+  }
+
 </script>
 
 {#if documents.length === 0}
@@ -18,9 +39,12 @@
 	<div id="document-list-content">
 		
 			<form>
-				{#each documents as document}
+				{#each documents as document, index}
 					<div id="document-list-item">
-						<input type="checkbox" />
+						<input type="checkbox"
+						name="document-checkbox"
+						checked={selectedIndices.has(index)}
+						onchange={() => toggleSelection(index)} />
 						<button
 							onclick={() => onSelect(document.id)}
 							type="button">open</button
@@ -33,7 +57,15 @@
 					type="button"
 					onclick={(e) => {
 						e.preventDefault();
-					}}>Delete</button
+						console.log('Supprimer:', selectedIds);
+						onDelete(selectedIds);
+
+						// Logique de suppression
+						selectedIndices = new Set();
+					}}
+
+    				disabled={selectedIds.length === 0}
+					>Delete</button
 				>
 				{#if documents.length === 1}
 					<span>1 document</span>
