@@ -118,4 +118,27 @@ execute function set_updated_at();
 -- 6. alter table pour ajouter un titre
 ALTER TABLE public.documents
   ADD COLUMN title text;
-  
+
+-- Soft delete pour les documents (corbeille)
+-- À exécuter dans l'éditeur SQL de Supabase, ou via la CLI Supabase
+-- (supabase db push) si tu gères tes migrations en fichiers versionnés.
+
+alter table public.documents
+  add column deleted_at timestamp with time zone null;
+
+-- Nécessaire pour permanentlyDelete() et emptyTrash() : sans le cascade,
+-- Postgres refuse de supprimer un document tant que des lignes
+-- document_versions le référencent encore.
+alter table public.document_versions
+  drop constraint document_versions_document_id_fkey,
+  add constraint document_versions_document_id_fkey
+    foreign key (document_id) references public.documents(id)
+    on delete cascade;
+
+-- Garde list() / list(true) rapides une fois la table plus grande.
+create index idx_documents_deleted_at
+  on public.documents (deleted_at);
+
+
+alter table public.documents disable row level security;
+alter table public.document_versions disable row level security;
