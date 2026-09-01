@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as Y from "yjs";
-import { DocumentRepository } from "./DocumentRepository";
+import { DocumentRepository } from "../DocumentRepository";
 import { createTestRepository, supabase } from "./DocumentRepository.test-utils";
 
 describe("DocumentRepository : corbeille", () => {
