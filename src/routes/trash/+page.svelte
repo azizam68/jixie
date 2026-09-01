@@ -104,7 +104,11 @@
   }
 </script>
 
-<h1>Corbeille</h1>
+<p style="display:flex; flex-direction:row; gap: 0.5rem; align-items:center;">
+        <a href="/">Jixie home</a> >
+        <b>Corbeille</b>
+</p>
+
 
 {#if !url || !key}
   <p>Configure d'abord ta connexion Supabase depuis la page d'accueil.</p>

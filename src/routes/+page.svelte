@@ -117,4 +117,7 @@
       onDelete={(id) => deleteDocument(id)}
     />
   </div>
+  <div>
+    <button type="button" onclick={()=>goto('/trash')}> Corbeille </button>
+  </div>
 {/if}
