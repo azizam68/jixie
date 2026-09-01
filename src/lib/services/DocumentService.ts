@@ -30,6 +30,27 @@ export class DocumentService {
         await this.repository.delete(documentId);
     }
 
+    /**
+     * Documents actuellement dans la corbeille uniquement (filtre côté
+     * service ce que repository.list(true) retourne : actifs + supprimés).
+     */
+    async listTrash(): Promise<IDocumentListItem[]> {
+        const documents = await this.repository.list(true);
+        return documents.filter((document) => document.deletedAt !== null);
+    }
+
+    async restore(documentId: string): Promise<void> {
+        await this.repository.restore(documentId);
+    }
+
+    async permanentlyDelete(documentId: string): Promise<void> {
+        await this.repository.permanentlyDelete(documentId);
+    }
+
+    async emptyTrash(): Promise<void> {
+        await this.repository.emptyTrash();
+    }
+
     async loadVersion(versionId: string): Promise<Y.Doc> {
         return this.repository.loadVersion(versionId);
     }
