@@ -59,6 +59,14 @@
             documentService!.save(data.documentId, ydoc)
         }
     />
+    <button
+        onclick={() => {
+            documentService!.delete(data.documentId);
+            window.location.href = "/";
+        }}
+    >
+        Supprimer le document
+    </button>
 {:else}
     <p>Chargement du document…</p>
 {/if}

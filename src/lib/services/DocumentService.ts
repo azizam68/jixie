@@ -14,15 +14,41 @@ export class TitleTooLongError extends Error {
 export class DocumentService {
     constructor(private repository: IDocumentRepository) { }
 
-    async list(): Promise<IDocumentListItem[]> {
-        return this.repository.list();
+    async list(includeTrash?: boolean | undefined): Promise<IDocumentListItem[]> {
+        return this.repository.list(includeTrash);
     }
+
     async load(documentId: string): Promise<Y.Doc> {
         return this.repository.load(documentId);
     }
 
     async save(documentId: string, ydoc: Y.Doc): Promise<void> {
         await this.repository.save(documentId, ydoc);
+    }
+
+    async delete(documentId: string): Promise<void> {
+        await this.repository.delete(documentId);
+    }
+
+    /**
+     * Documents actuellement dans la corbeille uniquement (filtre côté
+     * service ce que repository.list(true) retourne : actifs + supprimés).
+     */
+    async listTrash(): Promise<IDocumentListItem[]> {
+        const documents = await this.repository.list(true);
+        return documents.filter((document) => document.deletedAt !== null);
+    }
+
+    async restore(documentId: string): Promise<void> {
+        await this.repository.restore(documentId);
+    }
+
+    async permanentlyDelete(documentId: string): Promise<void> {
+        await this.repository.permanentlyDelete(documentId);
+    }
+
+    async emptyTrash(): Promise<void> {
+        await this.repository.emptyTrash();
     }
 
     async loadVersion(versionId: string): Promise<Y.Doc> {
