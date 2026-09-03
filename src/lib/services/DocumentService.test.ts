@@ -12,10 +12,15 @@ describe("DocumentService", () => {
         create: vi.fn(),
         getTitle: vi.fn(),
         updateTitle: vi.fn(),
+        delete: vi.fn(),
+        restore: vi.fn(),
+        permanentlyDelete: vi.fn(),
+        emptyTrash: vi.fn(),
         list: async () => [
             {
                 id: "86868686-86868686-868686868-868686868-8686868686",
                 title: 'Mon premier document',
+                deletedAt: null
             }
         ]
     };
