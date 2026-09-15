@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { Editor as TiptapEditor } from "@tiptap/core";
   import StarterKit from "@tiptap/starter-kit";
+  import { CharacterCount } from '@tiptap/extensions'
   import * as Y from "yjs";
   import Collaboration from "@tiptap/extension-collaboration";
   import TextAlign from "@tiptap/extension-text-align";
@@ -28,6 +29,7 @@
   let rightAlignActive = $state(false);
   let justifyActive = $state(false);
   let saveStatus = $state<"saved" | "saving" | "error">("saved");
+  let wordCount = $state(0);
 
   function updateToolbarState() {
     boldActive = editor.isActive("bold");
@@ -64,6 +66,7 @@
       element: editorElement,
 
       extensions: [
+        CharacterCount,
         StarterKit.configure({
           undoRedo: false,
         }),
@@ -75,6 +78,10 @@
           types: ["heading", "paragraph"],
         }),
       ],
+
+      onTransaction: ({ editor: currentEditor }) => {
+        wordCount = currentEditor.storage.characterCount.words();
+      },
 
       onUpdate: ({ editor }) => {
         boldActive = editor.isActive("bold");
@@ -240,52 +247,72 @@
     spellcheck={false}
     bind:this={editorElement}
     aria-label="Éditeur de document"
-    style="border: none;"
+    id="editor-textbox"
   ></div>
+
+  <div role="status" aria-label="status" class="editor-status-bar"> {wordCount} mots </div>
 </div>
 
 <style>
-  #editor-container {
-    min-height: 90dvh;
-    min-width: 90vw;
-    border: 1px solid black;
-    margin: 0px;
-    padding: 0px;
-    position: relative;
+#editor-container {
+  min-height: 90dvh;
+  height: 90dvh;
+  min-width: 90vw;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5px;
+}
 
-    #editor-toolbar {
-      position: sticky;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 10px;
-      top: 0;
-      border-bottom: 1px solid #999;
-      background-color: #f0f0f0;
-      z-index: 10;
-      padding: 5px;
-    }
+#editor-container #editor-textbox {
+  border: none;
+  margin: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 5px;
+}
 
-    .editor-toolbar-group {
-      display: flex;
-      flex-direction: row;
-      gap: 0px;
-      border: 1px solid #999;
+#editor-container #editor-toolbar {
+  position: sticky;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  top: 0;
+  border-bottom: 1px solid #999;
+  background-color: #f0f0f0;
+  z-index: 10;
+  padding: 5px;
+}
 
-      button {
-        border: none;
-        background-color: #f0f0f0;
-        padding: 5px 10px;
-        cursor: pointer;
-      }
-    }
+#editor-container .editor-status-bar {
+  padding: 5px;
+  flex-shrink: 0;
+  border-top: 1px solid #999;
+  background-color: #f0f0f0;
+}
 
-    div[aria-label="Éditeur de document"] {
-      padding: 5px;
-      margin: 5px; /* Pour l'éditeur Tiptap */
-    }
-    button[aria-pressed="true"] {
-      background-color: #ddd;
-    }
-  }
+#editor-container .editor-toolbar-group {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  border: 1px solid #999;
+}
+
+#editor-container .editor-toolbar-group button {
+  border: none;
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#editor-container div[aria-label="Éditeur de document"] {
+  padding: 5px;
+  margin: 5px;
+}
+
+#editor-container button[aria-pressed="true"] {
+  background-color: #ddd;
+}
 </style>
