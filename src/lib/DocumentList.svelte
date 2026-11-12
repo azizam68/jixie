@@ -57,7 +57,6 @@
 					type="button"
 					onclick={(e) => {
 						e.preventDefault();
-						console.log('Supprimer:', selectedIds);
 						onDelete(selectedIds);
 
 						// Logique de suppression
