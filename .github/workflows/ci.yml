@@ -24,8 +24,8 @@ jobs:
       # Ajoutez cette étape pour créer le .env
       - name: Create .env file
         run: |
-          echo "PUBLIC_SUPABASE_URL=https://mock-project.supabase.co" >> .env
-          echo "PUBLIC_SUPABASE_ANON_KEY=mock-key-for-ci" >> .env
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_TEST_URL }}" >> .env
+          echo "PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_TEST_ANON_KEY }}" >> .env
 
       - name: Check
         run: npm run check
